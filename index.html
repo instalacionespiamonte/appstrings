@@ -1,0 +1,3643 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dimensionamiento FV — Piamonte</title>
+<style>
+:root {
+  --primary: #16a34a;
+  --primary-light: #22c55e;
+  --primary-dark: #15803d;
+  --accent: #f59e0b;
+  --accent-light: #fcd34d;
+  --bg: #f4f6f9;
+  --card: #ffffff;
+  --border: #dde1e8;
+  --border-strong: #b8c0cc;
+  --text: #1a202c;
+  --text-muted: #6b7280;
+  --text-light: #9ca3af;
+  --success: #059669;
+  --success-bg: #d1fae5;
+  --warning: #d97706;
+  --warning-bg: #fef3c7;
+  --danger: #dc2626;
+  --danger-bg: #fee2e2;
+  --info: #16a34a;
+  --info-bg: #d1fae5;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.5;
+}
+
+/* ===== HEADER ===== */
+#app-header {
+  background: var(--primary-dark);
+  color: #fff;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+}
+#app-header .logo-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+#app-header h1 {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  color: #fff;
+}
+#app-header .subtitle {
+  font-size: 12px;
+  color: rgba(255,255,255,.6);
+  font-weight: 400;
+}
+#logo-preview-header {
+  height: 36px;
+  max-width: 80px;
+  object-fit: contain;
+  display: none;
+  border-radius: 4px;
+}
+#btn-pdf {
+  background: var(--accent);
+  color: #1a1a1a;
+  border: none;
+  padding: 8px 18px;
+  border-radius: var(--radius);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background .15s;
+  white-space: nowrap;
+}
+#btn-pdf:hover { background: var(--accent-light); }
+
+/* ===== NAV TABS ===== */
+#nav-tabs {
+  background: var(--primary);
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0 16px;
+  border-bottom: 2px solid var(--primary-dark);
+}
+#nav-tabs::-webkit-scrollbar { display: none; }
+.nav-tab {
+  padding: 10px 14px;
+  color: rgba(255,255,255,.7);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  transition: all .15s;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.nav-tab:hover { color: #fff; background: rgba(255,255,255,.08); }
+.nav-tab.active { color: #fff; border-bottom-color: var(--accent); background: rgba(255,255,255,.1); }
+.nav-tab .badge {
+  background: var(--accent);
+  color: #1a1a1a;
+  font-size: 10px;
+  font-weight: 700;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.nav-tab .badge.red { background: var(--danger); color: #fff; }
+.nav-tab .badge.green { background: var(--success); color: #fff; }
+
+/* ===== MAIN LAYOUT ===== */
+#main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ===== SECTION ===== */
+.section {
+  display: none;
+}
+.section.active { display: flex; flex-direction: column; gap: 16px; }
+
+/* ===== CARD ===== */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.card-header {
+  padding: 12px 16px;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 13px;
+}
+.card-header .icon {
+  width: 20px;
+  height: 20px;
+  background: rgba(255,255,255,.15);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+.card-body { padding: 16px; }
+
+/* ===== FORM GRID ===== */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+.form-grid-2 { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.field label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.field input, .field select, .field textarea {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 7px 10px;
+  font-size: 13px;
+  color: var(--text);
+  background: #fff;
+  transition: border-color .15s, box-shadow .15s;
+  width: 100%;
+}
+.field input:focus, .field select:focus {
+  outline: none;
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(22,163,74,.12);
+}
+.field input[type="date"] { cursor: pointer; }
+.field .hint {
+  font-size: 11px;
+  color: var(--text-light);
+}
+
+/* ===== SEMÁFORO ===== */
+.semaphore {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+.semaphore.green { background: var(--success-bg); color: var(--success); }
+.semaphore.orange { background: var(--warning-bg); color: var(--warning); }
+.semaphore.red { background: var(--danger-bg); color: var(--danger); }
+.semaphore::before {
+  content: '';
+  width: 8px; 
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+/* ===== KPI CARDS ===== */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+.kpi-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+}
+.kpi-card.highlight { border-left: 3px solid var(--primary); }
+.kpi-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  margin-bottom: 4px;
+}
+.kpi-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.1;
+}
+.kpi-unit {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-left: 3px;
+}
+.kpi-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+/* ===== MPPT GRID ===== */
+#mppt-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.mppt-card {
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: border-color .2s;
+}
+.mppt-card.valid { border-color: var(--success); }
+.mppt-card.warning { border-color: var(--warning); }
+.mppt-card.error { border-color: var(--danger); }
+.mppt-header {
+  background: var(--primary-dark);
+  color: #fff;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.mppt-body { padding: 10px; background: #f9fafb; display: flex; flex-direction: column; gap: 8px; }
+.string-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+}
+.string-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.panel-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin: 6px 0;
+}
+.panel-icon {
+  width: 12px;
+  height: 18px;
+  background: var(--primary-light);
+  border-radius: 1px;
+  border: 1px solid var(--primary);
+}
+.string-data {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  font-size: 11px;
+}
+.string-data span { color: var(--text-muted); }
+.string-data strong { color: var(--text); font-weight: 600; }
+.string-panels-input {
+  width: 60px;
+  padding: 3px 6px;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+.mppt-totals {
+  background: #e8edf3;
+  padding: 8px 10px;
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.mppt-totals span.ok { color: var(--success); }
+.mppt-totals span.err { color: var(--danger); }
+
+/* ===== TABLE ===== */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.data-table th {
+  background: var(--primary);
+  color: #fff;
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+.data-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:nth-child(even) td { background: #f9fafb; }
+.data-table tr:hover td { background: #f0f4f8; }
+.data-table td input {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  width: 80px;
+}
+
+/* ===== CHECKLIST ===== */
+.checklist-item {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  transition: background .1s;
+}
+.checklist-item:last-child { border-bottom: none; }
+.checklist-item:hover { background: #f9fafb; }
+.check-icon {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.check-icon.ok { background: var(--success-bg); color: var(--success); }
+.check-icon.warn { background: var(--warning-bg); color: var(--warning); }
+.check-icon.err { background: var(--danger-bg); color: var(--danger); }
+.check-desc { font-size: 13px; }
+.check-desc .values { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* ===== MONTHLY TABLE ===== */
+.month-bar {
+  display: inline-block;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--primary-light);
+  min-width: 2px;
+  transition: width .3s;
+}
+
+/* ===== TOGGLE ===== */
+.toggle-group {
+  display: flex;
+  gap: 4px;
+  background: var(--border);
+  padding: 3px;
+  border-radius: var(--radius);
+  width: fit-content;
+}
+.toggle-btn {
+  padding: 5px 14px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  transition: all .15s;
+}
+.toggle-btn.active { background: var(--primary); color: #fff; }
+
+/* ===== AUTO/MANUAL SWITCH ===== */
+.mode-switch {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.mode-btn {
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #fff;
+  color: var(--text-muted);
+  transition: all .15s;
+}
+.mode-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+/* ===== REFS TABLE ===== */
+.norm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.norm-table th {
+  background: var(--primary-dark);
+  color: #fff;
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+}
+.norm-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.norm-table td:first-child { font-family: monospace; font-weight: 700; color: var(--primary); white-space: nowrap; }
+.norm-table tr:nth-child(even) td { background: #f9fafb; }
+
+/* ===== LOGO UPLOAD ===== */
+.logo-upload-area {
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  background: #fafbfc;
+}
+.logo-upload-area:hover { border-color: var(--primary-light); background: var(--info-bg); }
+.logo-upload-area p { font-size: 13px; color: var(--text-muted); margin-top: 6px; }
+
+/* ===== INFO BOX ===== */
+.info-box {
+  background: var(--info-bg);
+  border: 1px solid #bae6fd;
+  border-left: 3px solid var(--info);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--info);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.info-box.warning { background: var(--warning-bg); border-color: #fcd34d; border-left-color: var(--warning); color: #92400e; }
+.info-box .ico { flex-shrink: 0; font-size: 14px; }
+
+/* ===== STATUS SUMMARY ===== */
+#design-status-bar {
+  background: var(--success-bg);
+  border: 1px solid #6ee7b7;
+  border-radius: var(--radius-lg);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--success);
+  transition: all .3s;
+}
+#design-status-bar.error { background: var(--danger-bg); border-color: #fca5a5; color: var(--danger); }
+#design-status-bar .status-icon { font-size: 20px; }
+
+/* ===== DIVIDER ===== */
+.divider { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
+
+/* ===== SECTION TITLE ===== */
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title .num {
+  background: var(--primary);
+  color: #fff;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+.section-sub { color: var(--text-muted); font-size: 12px; margin-bottom: 12px; }
+
+/* ===== OUTDATED WARN ===== */
+.outdated-warn {
+  background: var(--warning-bg);
+  border: 1px solid #fcd34d;
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--warning);
+  font-weight: 600;
+  display: none;
+}
+
+/* ===== ZONE CARD ===== */
+.zone-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.zone-header {
+  padding: 10px 16px;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+}
+.zone-header.zone-a { background: var(--primary); }
+.zone-header.zone-b { background: #1e6b6b; }
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:640px) {
+  .form-grid { grid-template-columns: 1fr 1fr; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  #mppt-grid-container { grid-template-columns: 1fr; }
+  #nav-tabs .nav-tab { padding: 10px 10px; font-size: 11px; }
+}
+
+/* ============================
+   PRINT STYLES — INFORME PDF PROFESIONAL
+   ============================ */
+
+/* Cabecera de página impresa (running header en cada sección) */
+.pdf-section-header {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 18mm 14mm 20mm 14mm;
+  }
+  @page :first {
+    margin: 0;
+  }
+
+  /* Forzar colores de fondo */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  body {
+    background: #fff !important;
+    font-size: 11px !important;
+    line-height: 1.45 !important;
+  }
+
+  /* Ocultar elementos de interfaz */
+  #app-header, #nav-tabs, .no-print,
+  .mode-switch, .toggle-group,
+  #btn-pdf, #btn-export, #btn-import, #import-file, #logo-upload-area,
+  .field input[type=file],
+  button,
+  .note-info, [class*="info-text"],
+  #projects-panel-container,
+  .outdated-warn,
+  #logo-preview-area, #promoter-logo-preview-area,
+  .info-box { display: none !important; }
+
+  /* ── LAYOUT PRINCIPAL ── */
+  #main {
+    padding: 0 !important;
+    max-width: 100% !important;
+    gap: 0 !important;
+  }
+
+  .section {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  /* Cada sección inicia en página nueva, salvo la portada */
+  .section:not(:first-child) {
+    page-break-before: always;
+    padding-top: 4mm !important;
+  }
+
+  /* ── CABECERA CORRIDA (aparece en cada sección impresa) ── */
+  .pdf-section-header {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #15803d;
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+  }
+  .pdf-section-header .psh-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .pdf-section-header .psh-logo {
+    height: 28px;
+    max-width: 80px;
+    object-fit: contain;
+  }
+  .pdf-section-header .psh-company {
+    font-size: 9px;
+    color: #15803d;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+  .pdf-section-header .psh-right {
+    font-size: 9px;
+    color: #6b7280;
+    text-align: right;
+  }
+  .pdf-section-header .psh-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #15803d;
+    letter-spacing: 0.3px;
+    margin-top: 2px;
+  }
+
+  /* ── TÍTULO DE SECCIÓN ── */
+  .section-title {
+    font-size: 14px !important;
+    font-weight: 800 !important;
+    color: #15803d !important;
+    border-left: 4px solid #f59e0b !important;
+    padding-left: 10px !important;
+    margin-bottom: 2px !important;
+  }
+  .section-title .num {
+    background: #15803d !important;
+    color: #fff !important;
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 11px !important;
+  }
+  .section-sub {
+    font-size: 10px !important;
+    color: #6b7280 !important;
+    padding-left: 10px !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    border: none !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    margin-bottom: 8px !important;
+    overflow: hidden !important;
+    border: 1px solid #d1d5db !important;
+  }
+  .card-header {
+    background: #15803d !important;
+    color: #fff !important;
+    font-weight: 700 !important;
+    font-size: 11px !important;
+    padding: 7px 12px !important;
+    letter-spacing: 0.3px !important;
+    border-radius: 0 !important;
+  }
+  .card-header .icon {
+    background: rgba(255,255,255,0.2) !important;
+  }
+  .card-body {
+    padding: 10px 12px !important;
+    background: #fff !important;
+  }
+
+  /* ── CAMPOS (campos de datos en el PDF) ── */
+  .field label {
+    font-size: 9px !important;
+    color: #374151 !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.4px !important;
+  }
+  .field input, .field select, .field textarea {
+    border: none !important;
+    border-bottom: 1px solid #d1d5db !important;
+    border-radius: 0 !important;
+    padding: 2px 0 !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: #111827 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  /* Descripción/Notas: ocultar textarea, mostrar div sustituto */
+  #proj-notes { display: none !important; }
+  #proj-notes-print {
+    font-size: 11px !important;
+    color: #374151 !important;
+    line-height: 1.7 !important;
+    white-space: pre-wrap !important;
+    word-break: break-word !important;
+    padding: 4px 0 !important;
+    background: transparent !important;
+  }
+
+  /* ── KPI CARDS ── */
+  .kpi-card {
+    background: #f9fafb !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px !important;
+    padding: 10px 12px !important;
+  }
+  .kpi-card.highlight {
+    background: #15803d !important;
+    border-color: #15803d !important;
+  }
+  .kpi-card.highlight .kpi-label,
+  .kpi-card.highlight .kpi-value,
+  .kpi-card.highlight .kpi-unit,
+  .kpi-card.highlight .kpi-sub { color: #fff !important; }
+  .kpi-label {
+    font-size: 9px !important;
+    color: #6b7280 !important;
+    letter-spacing: 0.5px !important;
+  }
+  .kpi-value {
+    font-size: 18px !important;
+    color: #15803d !important;
+  }
+  .kpi-unit { font-size: 11px !important; }
+  .kpi-sub { font-size: 10px !important; }
+
+  /* ── GRIDS ── */
+  .kpi-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
+  .form-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
+  #mppt-grid-container { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* ── TABLAS ── */
+  .data-table {
+    border: 1px solid #d1d5db !important;
+    font-size: 10px !important;
+    width: 100% !important;
+  }
+  .data-table th {
+    background: #15803d !important;
+    color: #fff !important;
+    padding: 6px 10px !important;
+    font-size: 9px !important;
+    letter-spacing: 0.5px !important;
+    border: none !important;
+  }
+  .data-table td {
+    padding: 6px 10px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    border-right: 1px solid #e5e7eb !important;
+    font-size: 10px !important;
+  }
+  .data-table tr:last-child td { border-bottom: none !important; }
+  .data-table tr:nth-child(even) td { background: #f9fafb !important; }
+  .data-table td input {
+    border: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    width: auto !important;
+  }
+
+  .norm-table {
+    font-size: 10px !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+  .norm-table th {
+    background: #15803d !important;
+    color: #fff !important;
+    padding: 6px 10px !important;
+    font-size: 9px !important;
+  }
+  .norm-table td {
+    padding: 6px 10px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    font-size: 10px !important;
+  }
+  .norm-table td:first-child {
+    color: #15803d !important;
+    font-weight: 700 !important;
+    font-family: monospace !important;
+    white-space: nowrap !important;
+  }
+  .norm-table tr:nth-child(even) td { background: #f9fafb !important; }
+
+  /* ── SEMÁFOROS ── */
+  .semaphore {
+    font-size: 10px !important;
+    padding: 4px 10px !important;
+  }
+  .semaphore.green, .semaphore.ok {
+    background: #d1fae5 !important;
+    color: #059669 !important;
+    border: 1px solid #059669 !important;
+  }
+  .semaphore.orange, .semaphore.warning, .semaphore.warn {
+    background: #fef3c7 !important;
+    color: #d97706 !important;
+    border: 1px solid #d97706 !important;
+  }
+  .semaphore.red, .semaphore.err, .semaphore.error {
+    background: #fee2e2 !important;
+    color: #dc2626 !important;
+    border: 1px solid #dc2626 !important;
+  }
+
+  /* ── ZONAS A/B ── */
+  .zone-card {
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px !important;
+    overflow: hidden !important;
+  }
+  .zone-header.zone-a {
+    background: #15803d !important;
+    color: #fff !important;
+    font-size: 11px !important;
+    padding: 7px 12px !important;
+  }
+  .zone-header.zone-b {
+    background: #1e6b6b !important;
+    color: #fff !important;
+    font-size: 11px !important;
+    padding: 7px 12px !important;
+  }
+
+  /* ── MPPT CARDS ── */
+  .mppt-card {
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px !important;
+    overflow: hidden !important;
+  }
+  .mppt-card.valid { border-color: #059669 !important; }
+  .mppt-card.warning { border-color: #d97706 !important; }
+  .mppt-card.error { border-color: #dc2626 !important; }
+  .mppt-header {
+    background: #15803d !important;
+    color: #fff !important;
+    font-size: 10px !important;
+    padding: 6px 10px !important;
+  }
+  .mppt-body { background: #f9fafb !important; padding: 8px !important; }
+  .string-card {
+    border: 1px solid #e5e7eb !important;
+    border-radius: 4px !important;
+    padding: 8px !important;
+    background: #fff !important;
+    font-size: 10px !important;
+    margin-bottom: 4px !important;
+  }
+  .string-title { font-size: 10px !important; color: #15803d !important; }
+  .string-data { font-size: 10px !important; }
+  .mppt-totals {
+    background: #ecfdf5 !important;
+    padding: 6px 10px !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    border-top: 1px solid #d1d5db !important;
+  }
+
+  /* ── CHECKLIST ── */
+  .checklist-item {
+    border-bottom: 1px solid #e5e7eb !important;
+    padding: 7px 12px !important;
+    background: #fff !important;
+    break-inside: avoid !important;
+  }
+  .checklist-item:nth-child(even) { background: #f9fafb !important; }
+  .check-icon {
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 11px !important;
+  }
+  .check-icon.ok { background: #059669 !important; color: #fff !important; }
+  .check-icon.warn { background: #d97706 !important; color: #fff !important; }
+  .check-icon.err { background: #dc2626 !important; color: #fff !important; }
+  .check-desc { font-size: 11px !important; }
+  .check-desc .values { font-size: 9px !important; }
+
+  /* ── PORTADA ── */
+  #cover-page {
+    display: block !important;
+    page-break-after: always;
+    width: 210mm;
+    min-height: 297mm;
+    position: relative;
+    background: #fff !important;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+  /* Los logos de portada se muestran si el JS los ha activado */
+  #cover-logo[src]:not([src=""]) { display: block !important; }
+  #cover-promoter-logo[src]:not([src=""]) { display: block !important; }
+
+  /* ── PIE DE PÁGINA AUTOMÁTICO ── */
+  .pdf-page-footer {
+    display: block !important;
+    position: fixed;
+    bottom: 8mm;
+    left: 14mm;
+    right: 14mm;
+    border-top: 1px solid #d1d5db;
+    padding-top: 4px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 8px;
+    color: #9ca3af;
+  }
+
+  /* Sección Sombras: zonas A y B en vertical para mayor legibilidad */
+  #sec-8 .zones-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+  #sec-8 .zone-card .form-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 6px !important;
+  }
+  #sec-8 .zone-card .card-body {
+    padding: 8px 12px !important;
+  }
+  #sec-8 .zone-card .card-body > div[style*="grid-template-columns:1fr 1fr"] {
+    grid-template-columns: repeat(6, 1fr) !important;
+    gap: 4px !important;
+  }
+  span:has(> strong:contains("16 mm²")),
+  [style*="color:var(--danger)"] {
+    display: none !important;
+  }
+}
+
+/* ===== COVER PAGE (solo en impresión) ===== */
+#cover-page {
+  display: none;
+}
+</style>
+</head>
+<body>
+
+<!-- COVER PAGE (print only) -->
+<div id="cover-page">
+  <!-- Franja lateral verde -->
+  <div style="position:absolute;left:0;top:0;bottom:0;width:8mm;background:linear-gradient(180deg,#15803d 0%,#16a34a 60%,#f59e0b 100%);"></div>
+
+  <!-- Contenedor principal con padding izquierdo para la franja -->
+  <div style="margin-left:12mm;height:297mm;display:flex;flex-direction:column;padding:16mm 14mm 10mm 16mm;box-sizing:border-box;">
+
+    <!-- CABECERA: Logo + nombre empresa -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:10mm;border-bottom:1.5px solid #e5e7eb;">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <img id="cover-logo" src="" alt="Logo Empresa" style="max-height:52px;max-width:160px;object-fit:contain;display:none;">
+        <div>
+          <div style="font-size:16px;font-weight:800;color:#15803d;letter-spacing:-0.3px;line-height:1.2;">Piamonte Servicios Integrales S.A.</div>
+          <div style="font-size:9px;color:#6b7280;letter-spacing:1.2px;text-transform:uppercase;margin-top:3px;">Departamento de Ingeniería y Desarrollo Técnico</div>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="background:#15803d;color:#fff;font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:4px 14px;border-radius:3px;display:inline-block;">Informe Técnico</div>
+      </div>
+    </div>
+
+    <!-- BLOQUE CENTRAL: Título del informe -->
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:12mm 0;">
+
+      <!-- Tipo de documento -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8mm;">
+        <div style="width:40px;height:3px;background:#f59e0b;border-radius:2px;"></div>
+        <span style="font-size:10px;color:#f59e0b;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Dimensionamiento Fotovoltaico</span>
+        <div style="flex:1;height:1px;background:#e5e7eb;"></div>
+      </div>
+
+      <!-- Nombre del proyecto (grande) -->
+      <div style="font-size:28px;font-weight:800;color:#111827;line-height:1.2;margin-bottom:4mm;">Instalación de Energía<br><span style="color:#15803d;">Solar Fotovoltaica</span></div>
+
+      <!-- Promotor y localidad -->
+      <div style="display:flex;flex-direction:column;gap:3mm;margin-bottom:10mm;">
+        <div style="display:flex;align-items:baseline;gap:8px;">
+          <span style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;font-weight:600;min-width:70px;">Promotor</span>
+          <span style="font-size:16px;font-weight:700;color:#374151;" id="cover-promoter">—</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:8px;">
+          <span style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;font-weight:600;min-width:70px;">Localidad</span>
+          <span style="font-size:16px;font-weight:700;color:#15803d;" id="cover-locality-large">—</span>
+        </div>
+      </div>
+
+      <!-- Logo del promotor (si existe) -->
+      <img id="cover-promoter-logo" src="" alt="Logo Promotor" style="max-height:60px;max-width:160px;object-fit:contain;display:none;margin-bottom:8mm;filter:grayscale(10%);">
+
+      <!-- Línea divisoria -->
+      <div style="height:1px;background:linear-gradient(90deg,#15803d,#e5e7eb);margin-bottom:8mm;"></div>
+
+      <!-- Bloque de datos técnicos en 3 columnas -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6mm;">
+        <div style="border-top:3px solid #15803d;padding-top:4mm;">
+          <div style="font-size:8px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:2mm;">Fecha de Emisión</div>
+          <div style="font-size:13px;font-weight:700;color:#111827;" id="cover-date">—</div>
+        </div>
+        <div style="border-top:3px solid #f59e0b;padding-top:4mm;">
+          <div style="font-size:8px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:2mm;">Tipo de Instalación</div>
+          <div style="font-size:13px;font-weight:700;color:#111827;">Energía Solar FV</div>
+        </div>
+        <div style="border-top:3px solid #1e6b6b;padding-top:4mm;">
+          <div style="font-size:8px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:2mm;">Clasificación</div>
+          <div style="font-size:13px;font-weight:700;color:#111827;">Uso Interno</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PIE DE PORTADA -->
+    <div style="border-top:1px solid #e5e7eb;padding-top:6mm;display:flex;align-items:flex-end;justify-content:space-between;">
+      <div>
+        <div style="font-size:8px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">Software de Dimensionamiento</div>
+        <div style="font-size:10px;color:#374151;font-weight:700;">Piamonte FV Designer · v2025</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:8px;color:#9ca3af;">Documento generado automáticamente</div>
+        <div style="font-size:8px;color:#9ca3af;">No válido sin firma del técnico responsable</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- HEADER -->
+<header id="app-header">
+  <div class="logo-area">
+    <img id="logo-preview-header" src="" alt="Logo">
+    <div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <h1>⚡ Diseñador FV</h1>
+        <span class="subtitle">Piamonte Servicios Integrales S.A.</span>
+      </div>
+    </div>
+  </div>
+  <button id="btn-export" onclick="exportProject()" title="Descargar proyecto como JSON" style="background:#16a34a;color:#fff;border:none;padding:8px 14px;border-radius:var(--radius);font-weight:600;font-size:12px;cursor:pointer;margin-right:6px;">💾 Exportar</button>
+  <button id="btn-import" onclick="document.getElementById('import-file').click()" title="Cargar proyecto desde JSON" style="background:#16a34a;color:#fff;border:none;padding:8px 14px;border-radius:var(--radius);font-weight:600;font-size:12px;cursor:pointer;margin-right:6px;">📂 Importar</button>
+  <input type="file" id="import-file" accept="application/json,.json" style="display:none;" onchange="importProject(event)">
+  <button id="btn-reset" onclick="resetAllFields()" style="background:#dc2626;color:#fff;border:none;padding:8px 14px;border-radius:var(--radius);font-weight:600;font-size:12px;cursor:pointer;margin-right:6px;" title="Empezar nuevo proyecto">🗑 Nuevo proyecto</button>
+  <button id="btn-pdf" onclick="downloadPDF()">📄 Informe PDF</button>
+</header>
+
+<!-- NAV TABS -->
+<nav id="nav-tabs">
+  <div class="nav-tab active" onclick="showSection(0)" data-idx="0">🗂 Proyecto</div>
+  <div class="nav-tab" onclick="showSection(1)" data-idx="1">☀ Paneles</div>
+  <div class="nav-tab" onclick="showSection(2)" data-idx="2">⚡ Inversor</div>
+  <div class="nav-tab" onclick="showSection(3)" data-idx="3">🌡 Temperaturas</div>
+  <div class="nav-tab" onclick="showSection(4)" data-idx="4">📊 Resumen FV</div>
+  <div class="nav-tab" onclick="showSection(5)" data-idx="5">🔌 Distribución</div>
+  <div class="nav-tab" onclick="showSection(6)" data-idx="6">📐 Strings</div>
+  <div class="nav-tab" onclick="showSection(7)" data-idx="7">🛡 Protecciones</div>
+  <div class="nav-tab" onclick="showSection(8)" data-idx="8">📐 Sombras</div>
+  <div class="nav-tab" onclick="showSection(9)" data-idx="9">📈 Producción</div>
+  <div class="nav-tab" onclick="showSection(10)" data-idx="10">✅ Verificación</div>
+  <div class="nav-tab" onclick="showSection(11)" data-idx="11">📜 Normativa</div>
+</nav>
+
+<div id="main">
+
+<!-- ========== SECCIÓN 0: PROYECTO ========== -->
+<section class="section active" id="sec-0">
+  <div class="pdf-section-header">
+    <div class="psh-left"><div><div class="psh-company">Piamonte Servicios Integrales S.A. · Dpto. Ingeniería</div><div class="psh-title">§0 — Identificación del Proyecto</div></div></div>
+    <div class="psh-right">Dimensionamiento Fotovoltaico</div>
+  </div>
+  <div class="section-title"><span class="num">0</span>Identificación del Proyecto</div>
+  <p class="section-sub">Datos generales del proyecto e informe PDF</p>
+
+  <div class="card">
+    <div class="card-header"><span class="icon">🗂</span>Datos del Proyecto</div>
+    <div class="card-body">
+      <div class="form-grid form-grid-2">
+        <div class="field">
+          <label>Nombre del Proyecto</label>
+          <input type="text" id="proj-name" placeholder="Ej. Instalación FV Nave Industrial" oninput="updateCover()">
+        </div>
+        <div class="field">
+          <label>Localidad</label>
+          <input type="text" id="proj-locality" placeholder="Ej. Sevilla, Andalucía" oninput="updateCover()">
+        </div>
+        <div class="field">
+          <label>Fecha de Cálculo</label>
+          <input type="date" id="proj-date" oninput="updateCover()">
+        </div>
+        <div class="field">
+          <label>Promotor / Cliente</label>
+          <input type="text" id="proj-promoter" placeholder="Nombre del promotor u cliente" oninput="updateCover()">
+        </div>
+        <div class="field">
+          <label>Técnico Responsable</label>
+          <input type="text" id="proj-tech" placeholder="Nombre del técnico">
+        </div>
+        <div class="field" style="grid-column: span 2;">
+          <label>Descripción / Notas</label>
+          <textarea id="proj-notes" rows="4" style="resize:vertical;" placeholder="Observaciones del proyecto..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card no-print">
+    <div class="card-header"><span class="icon">🏢</span>Imagen Corporativa — Instalador / Empresa</div>
+    <div class="card-body">
+      <div class="logo-upload-area" onclick="document.getElementById('logo-file').click()">
+        <div style="font-size:28px;">📷</div>
+        <p>Seleccionar logotipo (PNG, JPG, SVG · máx. recomendado 300×120 px)</p>
+        <p style="font-size:11px;margin-top:4px;color:var(--text-light)">Se incluirá en la portada del informe PDF y en la cabecera de la aplicación</p>
+        <input type="file" id="logo-file" accept="image/*" style="display:none" onchange="loadLogo(event)">
+      </div>
+      <div id="logo-preview-area" style="display:none;margin-top:12px;text-align:center;">
+        <img id="logo-preview-big" src="" alt="Logo" style="max-height:80px;max-width:220px;object-fit:contain;border:1px solid var(--border);border-radius:var(--radius);padding:8px;">
+        <br><button onclick="removeLogo()" style="margin-top:8px;padding:4px 12px;font-size:12px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;background:#fff;color:var(--danger);">Eliminar logo</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card no-print">
+    <div class="card-header"><span class="icon">🏘</span>Imagen Corporativa — Promotor / Cliente</div>
+    <div class="card-body">
+      <div class="logo-upload-area" onclick="document.getElementById('promoter-logo-file').click()">
+        <div style="font-size:28px;">📸</div>
+        <p>Seleccionar logotipo del promotor (PNG, JPG, SVG · máx. recomendado 300×120 px)</p>
+        <p style="font-size:11px;margin-top:4px;color:var(--text-light)">Se incluirá en la portada del informe PDF junto a los datos de localización</p>
+        <input type="file" id="promoter-logo-file" accept="image/*" style="display:none" onchange="loadPromoterLogo(event)">
+      </div>
+      <div id="promoter-logo-preview-area" style="display:none;margin-top:12px;text-align:center;">
+        <img id="promoter-logo-preview-big" src="" alt="Promoter Logo" style="max-height:80px;max-width:220px;object-fit:contain;border:1px solid var(--border);border-radius:var(--radius);padding:8px;">
+        <br><button onclick="removePromoterLogo()" style="margin-top:8px;padding:4px 12px;font-size:12px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;background:#fff;color:var(--danger);">Eliminar logo</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box no-print">
+    <span class="ico">ℹ️</span>
+    <span>El botón <strong>Informe PDF</strong> (arriba a la derecha) genera una portada dedicada seguida de todos los módulos del proyecto. Los controles de interfaz se ocultan automáticamente en la impresión.</span>
+  </div>
+</section>
+
+<!-- ========== SECCIÓN 1: DATOS DEL PANEL FOTOVOLTAICO ========== -->
+<section class="section" id="sec-1">
+  <div class="pdf-section-header">
+    <div class="psh-left"><div><div class="psh-company">Piamonte Servicios Integrales S.A. · Dpto. Ingeniería</div><div class="psh-title">§1 — Datos del Panel Fotovoltaico</div></div></div>
+    <div class="psh-right">Dimensionamiento Fotovoltaico</div>
+  </div>
+  <div class="section-title"><span class="num">1</span>Datos del Panel Fotovoltaico</div>
+
+  <div class="card">
+    <div class="card-header"><span class="icon">☀</span>Configuración del Campo FV</div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="field">
+          <label>Nº Paneles Totales</label>
+          <input type="number" id="p-total" value="20" min="1" oninput="updateLogic()">
+          <span class="hint">En modo Manual se calcula desde el grid</span>
+        </div>
+        <div class="field">
+          <label>Nº Strings Totales</label>
+          <input type="number" id="p-strings" value="4" min="1" oninput="updateLogic()">
+          <span class="hint">En modo Manual se calcula desde el grid</span>
+        </div>
+        <div class="field">
+          <label>Paneles por String (calc.)</label>
+          <input type="text" id="p-per-string" readonly style="background:#f5f5f5;font-weight:700;color:var(--primary)">
+          <span class="hint">Calculado automáticamente</span>
+        </div>
+        <div class="field">
+          <label>Potencia Unitaria (W)</label>
+          <input type="number" id="p-power" value="450" min="1" oninput="updateLogic()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="icon">⚡</span>Parámetros Eléctricos STC</div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="field">
+          <label>Voc (V)</label>
+          <input type="number" id="p-voc" value="49.5" step="0.1" oninput="updateLogic()">
+          <span class="hint">Tensión circuito abierto</span>
+        </div>
+        <div class="field">
+          <label>Vmp (V)</label>
+          <input type="number" id="p-vmp" value="41.2" step="0.1" oninput="updateLogic()">
+          <span class="hint">Tensión máxima potencia</span>
+        </div>
+        <div class="field">
+          <label>Isc (A)</label>
+          <input type="number" id="p-isc" value="11.2" step="0.01" oninput="updateLogic()">
+          <span class="hint">Corriente cortocircuito</span>
+        </div>
+        <div class="field">
+          <label>Imp (A)</label>
+          <input type="number" id="p-imp" value="10.6" step="0.01" oninput="updateLogic()">
+          <span class="hint">Corriente máxima potencia</span>
+        </div>
+        <div class="field">
+          <label>Coef. Temp. Tensión (%/°C)</label>
+          <input type="number" id="p-coef" value="-0.27" step="0.01" oninput="updateLogic()">
+          <span class="hint">Valor negativo típico ≈ −0.27</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box no-print">
+    <span class="ico">ℹ️</span>
+    <span><strong>Serie vs Paralelo:</strong> Paneles en serie (un string) → la tensión se multiplica, la corriente NO suma (Isc string = Isc de UN panel). Strings en paralelo → la corriente se suma, la tensión NO varía.</span>
+  </div>
+</section>
+
+<!-- ========== SECCIÓN 2: DATOS DEL INVERSOR ========== -->
+<section class="section" id="sec-2">
+  <div class="pdf-section-header">
+    <div class="psh-left"><div><div class="psh-company">Piamonte Servicios Integrales S.A. · Dpto. Ingeniería</div><div class="psh-title">§2 — Datos del Inversor</div></div></div>
+    <div class="psh-right">Dimensionamiento Fotovoltaico</div>
+  </div>
+  <div class="section-title"><span class="num">2</span>Datos del Inversor</div>
+
+  <div class="card">
+    <div class="card-header"><span class="icon">⚡</span>Topología del Inversor</div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="field">
+          <label>Nº de MPPTs</label>
+          <input type="number" id="inv-mpptn" value="2" min="1" max="16" oninput="updateLogic()">
+        </div>
+        <div class="field">
+          <label>Entradas físicas por MPPT</label>
+          <input type="number" id="inv-inputs" value="2" min="1" oninput="updateLogic()">
+          <span class="hint">Clave para unión interna/externa</span>
+        </div>
+        <div class="field">
+          <label>Potencia AC nominal (W)</label>
+          <input type="number" id="inv-pac" value="8000" min="1" oninput="updateLogic()">
+        </div>
+        <div class="field">
+          <label>Sistema AC</label>
+          <select id="inv-system" onchange="refreshCablesData()">
+            <option value="mono">Monofásico 230V</option>
+            <option value="tri" selected>Trifásico 400V</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="icon">🔋</span>Límites de Tensión</div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="field">
+          <label>Vmax Entrada (V)</label>
+          <input type="number" id="inv-vmax" value="1000" oninput="updateLogic()">
+          <span class="hint">Tensión máxima absoluta</span>
+        </div>
+        <div class="field">
+          <label>Vmin MPPT (V)</label>
+          <input type="number" id="inv-vmin" value="200" oninput="updateLogic()">
+          <span class="hint">Tensión mínima de arranque</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="icon">⚡</span>Límites de Corriente por MPPT</div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="field">
+          <label>Imax Oper. / MPPT (A)</label>
+          <input type="number" id="inv-imax" value="26" step="0.1" oninput="updateLogic()">
+          <span class="hint">Suma de todos los strings del MPPT</span>
+        </div>
+        <div class="field">
+          <label>Isc Máx. / MPPT (A)</label>
+          <input type="number" id="inv-iscmax" value="30" step="0.1" oninput="updateLogic()">
+          <span class="hint">Corriente máxima de cortocircuito</span>
+        </div>
+      </div>
+      <div class="info-box no-print" style="margin-top:12px;">
+        <span class="ico">ℹ️</span>
+        <span>Ambos límites son por <strong>MPPT completo</strong>, no por entrada individual. La aplicación verifica la suma de corrientes de todos los strings, no la de un único panel.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SECCIÓN 3: TEMPERATURAS DE OPERACIÓN ========== -->
+<section class="section" id="sec-3">
+  <div class="pdf-section-header">
+    <div class="psh-left"><div><div class="psh-company">Piamonte Servicios Integrales S.A. · Dpto. Ingeniería</div><div class="psh-title">§3 — Temperaturas de Operación</div></div></div>
+    <div class="psh-right">Dimensionamiento Fotovoltaico</div>
+  </div>
+  <div class="section-title"><span class="num">3</span>Temperaturas de Operación</div>
+
+  <div class="card">
+    <div class="card-header"><span class="icon">🌡</span>Temperaturas Extremas del Emplazamiento</div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="field">
+          <label>Temperatura Mínima (°C)</label>
+          <input type="number" id="t-min" value="-5" oninput="updateLogic()">
+          <span class="hint">Para Voc máxima (peor caso tensión)</span>
+        </div>
+        <div class="field">
+          <label>Temperatura Máxima (°C)</label>
+          <input type="number" id="t-max" value="70" oninput="updateLogic()">
+          <span class="hint">Para Vmp mínima (peor caso MPPT)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="icon">📐</span>Cálculos Derivados</div>
+    <div class="card-body">
+      <div class="kpi-grid" id="temp-kpis">
+        <div class="kpi-card highlight">
+          <div class="kpi-label">Voc Frío (por panel)</div>
+          <div class="kpi-value"><span id="voc-cold">—</span><span class="kpi-unit">V</span></div>
+          <div class="kpi-sub">Tensión máxima del panel</div>
+        </div>
+        <div class="kpi-card highlight">
+          <div class="kpi-label">Vmp Calor (por panel)</div>
+          <div class="kpi-value"><span id="vmp-hot">—</span><span class="kpi-unit">V</span></div>
+          <div class="kpi-sub">Tensión mínima MPPT</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Máx. Paneles / String</div>
+          <div class="kpi-value"><span id="max-panels-str">—</span></div>
+          <div class="kpi-sub">Límite por Vmax inversor</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Mín. Paneles / String</div>
+          <div class="kpi-value"><span id="min-panels-str">—</span></div>
+          <div class="kpi-sub">Límite por Vmin MPPT</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;" id="temp-status-box"></div>
+    </div>
+  </div>
+
+  <div class="info-box no-print">
+    <span class="ico">ℹ️</span>
+    <span><strong>Fórmulas:</strong> Voc_frío = Voc × [1 + (Coef/100) × (Tmin − 25)] | Vmp_calor = Vmp × [1 + (Coef/100) × (Tmax + 25 − 25)]</span>
+  </div>
+</section>
+
+<!-- ========== SECCIÓN 4: RESUMEN FOTOVOLTAICO ========== -->
+<section class="section" id="sec-4">
+  <div class="pdf-section-header">
+    <div class="psh-left"><div><div class="psh-company">Piamonte Servicios Integrales S.A. · Dpto. Ingeniería</div><div class="psh-title">§4 — Resumen Fotovoltaico</div></div></div>
+    <div class="psh-right">Dimensionamiento Fotovoltaico</div>
+  </div>
+  <div class="section-title"><span class="num">4</span>Resumen Fotovoltaico</div>
+
+  <div id="design-status-bar">
+    <span class="status-icon">✅</span>
+    <span id="status-text">Calculando...</span>
+  </div>
+
+  <div class="kpi-grid" id="summary-kpis">
+    <div class="kpi-card highlight">
+      <div class="kpi-label">Potencia Pico Total</div>
+      <div class="kpi-value"><span id="kwp-total">—</span><span class="kpi-unit">kWp</span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Ratio DC/AC</div>
+      <div id="ratio-dc-ac-card" class="kpi-value"><span id="ratio-dc-ac">—</span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Voc String (frío)</div>
+      <div class="kpi-value"><span id="voc-string-cold">—</span><span class="kpi-unit">V</span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">∑Imp MPPT Máximo</div>
+      <div class="kpi-value"><span id="imp-mppt">—</span><span class="kpi-unit">A</span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">∑Isc MPPT Máximo</div>
+      <div class="kpi-value"><span id="isc-mppt">—</span><span class="kpi-unit">A</span></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Strings por MPPT Máx.</div>
+      <div class="kpi-value"><span id="strings-per-mppt">—</span></div>
+    </div>
+  </div>
+
+  <div id="summary-alerts" style="display:flex;flex-direction:column;gap:8px;"></div>
+</section>
+
+<!-- ========== SECCIÓN 5: DIMENSIONADO DE CONDUCTORES ========== -->
+<section class="section" id="sec-5">
+  <div class="pdf-section-header">
+    <div class="psh-left"><div><div class="psh-company">Piamonte Servicios Integrales S.A. · Dpto. Ingeniería</div><div class="psh-title">§5 — Dimensionado de Strings</div></div></div>
+    <div class="psh-right">Dimensionamiento Fotovoltaico</div>
+  </div>
+  <div class="section-title"><span class="num">5</span>Dimensionado de Strings</div>
+
+  <div class="mode-switch no-print">
+    <button class="mode-btn active" id="mode-auto-btn" onclick="setGridMode('auto')">⚙ Automático</button>
+    <button class="mode-btn" id="mode-manual-btn" onclick="setGridMode('manual')">✏ Manual</button>
+    <button class="mode-btn" id="mode-reset-btn" onclick="setGridMode('auto')" style="margin-left:8px;border-color:var(--warning);color:var(--warning);">↺ Resetear Auto</button>
+  </div>
+
+  <div id="mppt-grid-container"></div>
+</section>
+
+<!-- ========== SECCIÓN 6: CONDUCTORES — CAÍDA DE TENSIÓN ========== -->
+<section class="section" id="sec-6">
+  <div class="pdf-section-header">
+    <div class="psh-left"><div><div class="psh-company">Piamonte Servicios Integrales S.A. · Dpto. Ingeniería</div><div class="psh-title">§6 — Conductores — Caída de Tensión</div></div></div>
+    <div class="psh-right">Dimensionamiento Fotovoltaico</div>
+  </div>
+  <div class="section-title"><span class="num">6</span>Conductores — Caída de Tensión</div>
+
+  <!-- ===== GRUPO DC ===== -->
+  <div class="card">
+    <div class="card-header" style="background:var(--primary);color:#fff;"><span class="icon">🔵</span>Tramos DC — String → Inversor</div>
+    <div class="card-body">
+      <div class="form-grid" style="margin-bottom:14px;">
+        <div class="field">
+          <label>Material DC</label>
+          <select id="c-material-dc" onchange="refreshCablesData()">
+            <option value="cu">Cobre (Cu)</option>
+          </select>
+          <span class="hint">DC solo admite Cobre</span>
+        </div>
+        <div class="field">
+          <label>Aislamiento DC</label>
+          <select id="c-insul-dc" onchange="refreshCablesData()">
+            <option value="xlpe">XLPE (90°C)</option>
+            <option value="pvc">PVC (70°C)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Método Instalación DC</label>
+          <select id="c-method-dc" onchange="refreshCablesData()">
+            <option value="E">Bandeja/Libre (E)</option>
+            <option value="B1">Tubo (B1)</option>
+          </select>
+          <span class="hint">Típico exterior: E</span>
+        </div>
+        <div class="field">
+          <label>Caída Tensión Máx. DC (%)</label>
+          <input type="number" id="c-drop-dc" value="1.5" step="0.1" min="0.1" oninput="refreshCablesData()">
+          <span class="hint">Recomendado ≤ 1.5% (IDAE/RD 244/2019)</span>
+        </div>
+      </div>
+      <div style="background:#eef3fb;border:1px solid #c4d5ec;border-left:4px solid var(--primary);border-radius:var(--radius);padding:10px 14px;font-size:11px;color:var(--text);line-height:1.6;margin-bottom:14px;">
+        <strong style="color:var(--primary);">📌 Criterio de cálculo DC:</strong> Caída de tensión y criterio térmico calculados con <strong>I<sub>diseño</sub> = 1.25 × I<sub>sc</sub></strong> (ITC-BT-40). Resistividad del conductor a temperatura máxima de servicio: ρ<sub>Cu,90°C</sub> = 0.02273 Ω·mm²/m para XLPE, ρ<sub>Cu,70°C</sub> = 0.02083 para PVC (UNE-HD 60364-5-52).
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>MPPT</th>
+              <th>Longitud (m)</th>
+              <th>Idiseño (A)</th>
+              <th>Isc (A)</th>
+              <th>Sección Mín. (mm²)</th>
+              <th>Criterio</th>
+            </tr>
+          </thead>
+          <tbody id="dc-cables-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== GRUPO AC ===== -->
+  <div class="card">
+    <div class="card-header" style="background:#1e6b6b;color:#fff;"><span class="icon">🟢</span>Tramo AC — Inversor → Cuadro</div>
+    <div class="card-body">
+      <div class="form-grid" style="margin-bottom:14px;">
+        <div class="field">
+          <label>Material AC</label>
+          <select id="c-material-ac" onchange="refreshCablesData()">
+            <option value="cu">Cobre (Cu)</option>
+            <option value="al">Aluminio (Al)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Aislamiento AC</label>
+          <select id="c-insul-ac" onchange="refreshCablesData()">
+            <option value="xlpe">XLPE (90°C)</option>
+            <option value="pvc">PVC (70°C)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Método Instalación AC</label>
+          <select id="c-method-ac" onchange="refreshCablesData()">
+            <option value="B1">Tubo (B1)</option>
+            <option value="E">Bandeja/Libre (E)</option>
+          </select>
+          <span class="hint">Típico interior: B1</span>
+        </div>
+        <div class="field">
+          <label>Tipo de Cable AC</label>
+          <select id="c-cabletype-ac" onchange="refreshCablesData()">
+            <option value="multi">Multipolar (manguera)</option>
+            <option value="uni">Unipolar</option>
+          </select>
+          <span class="hint">Típico: multipolar (RZ1-K, RV-K)</span>
+        </div>
+        <div class="field">
+          <label>Caída Tensión Máx. AC (%)</label>
+          <input type="number" id="c-drop-ac" value="1.5" step="0.1" min="0.1" oninput="refreshCablesData()">
+        </div>
+        <div class="field">
+          <label>Longitud AC (m)</label>
+          <input type="number" id="c-len-ac" value="10" min="1" oninput="refreshCablesData()">
+        </div>
+      </div>
+      <div id="ac-cable-result" style="padding:12px;background:var(--info-bg);border-radius:var(--radius);font-size:13px;"></div>
+      <div style="background:#eef7f3;border:1px solid #b8ddd0;border-left:4px solid #1e6b6b;border-radius:var(--radius);padding:10px 14px;font-size:11px;color:var(--text);line-height:1.6;margin-top:12px;">
+        <strong style="color:#1e6b6b;">📌 Criterio de cálculo AC:</strong> Caída de tensión y criterio térmico calculados con <strong>I<sub>diseño</sub> = 1.25 × I<sub>nominal</sub></strong> (ITC-BT-40, pto. 5). Resistividad a temperatura máxima de servicio del aislamiento. Tablas Iz diferenciadas por tipo de cable (unipolar/multipolar), nº de conductores cargados (mono/trifásica) y método de instalación (UNE-HD 60364-5-52).
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box warning no-print">
+    <span class="ico">⚠️</span>
+    <span>El aluminio queda <strong>prohibido para secciones inferiores a 16 mm²</strong> según el REBT.</span>
+  </div>
+</section>
+
+<!-- ========== SECCIÓN 7: PROTECCIONES ELÉCTRICAS DC ========== -->
+<section class="section" id="sec-7">
+  <div class="pdf-section-header">
+    <div class="psh-left"><div><div class="psh-company">Piamonte Servicios Integrales S.A. · Dpto. Ingeniería</div><div class="psh-title">§7 — Protecciones Eléctricas DC</div></div></div>
+    <div class="psh-right">Dimensionamiento Fotovoltaico</div>
+  </div>
+  <div class="section-title"><span class="num">7</span>Protecciones Eléctricas DC</div>
+
+  <div class="card">
+    <div class="card-header"><span class="icon">🛡</span>Corriente de Cortocircuito en Barras DC y Fusibles gPV</div>
+    <div class="card-body">
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>MPPT</th>
+              <th>Strings conectados</th>
+              <th>Strings ÷ Entradas físicas</th>
+              <th>Isc Barra (A)</th>
+              <th>Tipo Unión</th>
+              <th>Fusible gPV</th>
+            </tr>
+          </thead>
+          <tbody id="prot-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box no-print">
+    <span class="ico">ℹ️</span>
+    <span>
+      <strong>Cómo leer "Strings ÷ Entradas físicas":</strong> cada MPPT del inversor tiene un número de entradas físicas (conectores MC4). La columna muestra <em>strings conectados / entradas disponibles</em>.<br>
+      <strong>Ratio ≤ 1</strong> (ej. 1/3, 2/2) → cada string entra por su propio conector, unión <em>interna del fabricante</em>, fusible externo <em>no obligatorio</em>.<br>
+      <strong>Ratio &gt; 1</strong> (ej. 4/2 = 2 str por entrada) → combinación externa en paralelo → fusible gPV <em>obligatorio</em> (IEC 62548 §8.4).<br>
+      Rango de calibre: 1.25×Isc_panel ≤ In ≤ 2.0×Isc_panel (IEC 60269-6)
+    </span>
+  </div>
+</section>
+
+<!-- ========== SECCIÓN 8: CÁLCULO DE DISTANCIAS Y SOMBRAS ========== -->
+<section class="section" id="sec-8">
+  <div class="pdf-section-header">
+    <div class="psh-left"><div><div class="psh-company">Piamonte Servicios Integrales S.A. · Dpto. Ingeniería</div><div class="psh-title">§8 — Cálculo de Distancias y Sombras</div></div></div>
+    <div class="psh-right">Dimensionamiento Fotovoltaico</div>
+  </div>
+  <div class="section-title"><span class="num">8</span>Cálculo de Distancias y Sombras</div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="zones-grid">
+
+    <!-- ZONA A -->
+    <div class="zone-card">
+      <div class="zone-header zone-a">☀ Zona A</div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="field">
+            <label>Tipo de superficie</label>
+            <select id="sh-a-type" onchange="calcShadowsZone('a');markIrradOutdated('a')">
+              <option value="roof">Tejado plano</option>
+              <option value="ground">Terreno</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Orientación del panel</label>
+            <select id="sh-a-orient" onchange="calcShadowsZone('a');markIrradOutdated('a')">
+              <option value="vert">Vertical (lado largo ↕)</option>
+              <option value="horiz">Horizontal (lado corto ↕)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Latitud (°N)</label>
+            <input type="number" id="sh-a-lat" value="37.4" step="0.1" oninput="calcShadowsZone('a');markIrradOutdated('a')">
+          </div>
+          <div class="field">
+            <label>Alto panel (m)</label>
+            <input type="number" id="sh-a-h" value="2.00" step="0.01" oninput="calcShadowsZone('a');markIrradOutdated('a')">
+          </div>
+          <div class="field">
+            <label>Ancho panel (m)</label>
+            <input type="number" id="sh-a-w" value="1.00" step="0.01" oninput="calcShadowsZone('a');markIrradOutdated('a')">
+          </div>
+          <div class="field">
+            <label>Inclinación β (°)</label>
+            <input type="number" id="sh-a-beta" value="30" step="1" oninput="calcShadowsZone('a');markIrradOutdated('a')">
+          </div>
+          <div class="field">
+            <label>Azimut paneles (°)</label>
+            <input type="number" id="sh-a-az" value="0" step="1" oninput="calcShadowsZone('a');markIrradOutdated('a')">
+            <span class="hint">Sur = 0°, Este = −90°, Oeste = 90°</span>
+          </div>
+        </div>
+        <div style="margin-top:12px;background:#f9fafb;border-radius:var(--radius);padding:10px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;">
+            <div><span style="color:var(--text-muted);">Elevación solar α:</span> <strong id="sh-a-elev">—</strong>°</div>
+            <div><span style="color:var(--text-muted);">Azimut solar ψ:</span> <strong id="sh-a-solaz">—</strong>°</div>
+            <div><span style="color:var(--text-muted);">Altura estructura h:</span> <strong id="sh-a-height">—</strong> m</div>
+            <div><span style="color:var(--text-muted);">Ocupación horiz. p:</span> <strong id="sh-a-occup">—</strong> m</div>
+            <div><span style="color:var(--text-muted);">Pasillo libre d:</span> <strong id="sh-a-d">—</strong> m</div>
+            <div><span style="color:var(--text-muted)">Pitch (eje-eje):</span> <strong id="sh-a-pitch">—</strong> m</div>
+          </div>
+        </div>
+        <div id="sh-a-status" style="margin-top:12px;min-height:24px;display:flex;align-items:center;"></div>
+        <div style="margin-top:6px;font-size:10px;color:var(--text-muted);font-style:italic;">Criterio IDAE: solsticio de invierno (21 dic), 10:00 hora solar — garantiza 4h de sol en torno al mediodía todo el año.</div>
+      </div>
+    </div>
+
+    <!-- ZONA B -->
+    <div class="zone-card">
+      <div class="zone-header zone-b">☀ Zona B</div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="field">
+            <label>Tipo de superficie</label>
+            <select id="sh-b-type" onchange="calcShadowsZone('b');markIrradOutdated('b')">
+              <option value="roof">Tejado plano</option>
+              <option value="ground">Terreno</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Orientación del panel</label>
+            <select id="sh-b-orient" onchange="calcShadowsZone('b');markIrradOutdated('b')">
+              <option value="vert">Vertical (lado largo ↕)</option>
+              <option value="horiz">Horizontal (lado corto ↕)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Latitud (°N)</label>
+            <input type="number" id="sh-b-lat" value="37.4" step="0.1" oninput="calcShadowsZone('b');markIrradOutdated('b')">
+          </div>
+          <div class="field">
+            <label>Alto panel (m)</label>
+            <input type="number" id="sh-b-h" value="2.00" step="0.01" oninput="calcShadowsZone('b');markIrradOutdated('b')">
+          </div>
+          <div class="field">
+            <label>Ancho panel (m)</label>
+            <input type="number" id="sh-b-w" value="1.00" step="0.01" oninput="calcShadowsZone('b');markIrradOutdated('b')">
+          </div>
+          <div class="field">
+            <label>Inclinación β (°)</label>
+            <input type="number" id="sh-b-beta" value="30" step="1" oninput="calcShadowsZone('b');markIrradOutdated('b')">
+          </div>
+          <div class="field">
+            <label>Azimut paneles (°)</label>
+            <input type="number" id="sh-b-az" value="0" step="1" oninput="calcShadowsZone('b');markIrradOutdated('b')">
+            <span class="hint">Sur = 0°, Este = −90°, Oeste = 90°</span>
+          </div>
+        </div>
+        <div style="margin-top:12px;background:#f9fafb;border-radius:var(--radius);padding:10px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;">
+            <div><span style="color:var(--text-muted);">Elevación solar α:</span> <strong id="sh-b-elev">—</strong>°</div>
+            <div><span style="color:var(--text-muted);">Azimut solar ψ:</span> <strong id="sh-b-solaz">—</strong>°</div>
+            <div><span style="color:var(--text-muted);">Altura estructura h:</span> <strong id="sh-b-height">—</strong> m</div>
+            <div><span style="color:var(--text-muted);">Ocupación horiz. p:</span> <strong id="sh-b-occup">—</strong> m</div>
+            <div><span style="color:var(--text-muted);">Pasillo libre d:</span> <strong id="sh-b-d">—</strong> m</div>
+            <div><span style="color:var(--text-muted)">Pitch (eje-eje):</span> <strong id="sh-b-pitch">—</strong> m</div>
+          </div>
+        </div>
+        <div id="sh-b-status" style="margin-top:12px;min-height:24px;display:flex;align-items:center;"></div>
+        <div style="margin-top:6px;font-size:10px;color:var(--text-muted);font-style:italic;">Criterio IDAE: solsticio de invierno (21 dic), 10:00 hora solar — garantiza 4h de sol en torno al mediodía todo el año.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== SECCIÓN 9: ESTUDIO DE PRODUCCIÓN ESTIMADA ========== -->
+<section class="section" id="sec-9">
+  <div class="pdf-section-header">
+    <div class="psh-left"><div><div class="psh-company">Piamonte Servicios Integrales S.A. · Dpto. Ingeniería</div><div class="psh-title">§9 — Estudio de Producción Estimada</div></div></div>
+    <div class="psh-right">Dimensionamiento Fotovoltaico</div>
+  </div>
+  <div class="section-title"><span class="num">9</span>Estudio de Producción Estimada</div>
+
+  <div class="card">
+    <div class="card-header"><span class="icon">⚙</span>Parámetros Generales</div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="kpi-card highlight" style="grid-column:span 1;">
+          <div class="kpi-label">Potencia Pico Total</div>
+          <div class="kpi-value"><span id="prod-kwp">—</span><span class="kpi-unit">kWp</span></div>
+          <div class="kpi-sub">Sincronizado con campo FV</div>
+        </div>
+        <div class="field">
+          <label>Performance Ratio (PR)</label>
+          <input type="number" id="prod-pr" value="0.78" step="0.01" min="0.1" max="1" oninput="calcProduction()">
+          <span class="hint">Típico 0.70–0.85 (sin disponibilidad)</span>
+        </div>
+        <div class="field">
+          <label>Disponibilidad (%)</label>
+          <input type="number" id="prod-avail" value="98" step="0.5" min="80" max="100" oninput="calcProduction()">
+          <span class="hint">Típico 98–99%</span>
+        </div>
+        <div class="field">
+          <label>Precio Energía (€/kWh)</label>
+          <input type="number" id="prod-price" value="0.18" step="0.01" min="0.01" oninput="calcProduction()">
+        </div>
+        <div class="field">
+          <label>Albedo ρ</label>
+          <input type="number" id="prod-albedo" value="0.20" step="0.05" min="0" max="1" oninput="calcProduction()">
+          <span class="hint">0.2 suelo, 0.3 hormigón, 0.7 nieve</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toggle-group no-print" style="margin-left:4px;">
+    <button class="toggle-btn active" onclick="toggleProdMode('annual')">📅 Anual</button>
+    <button class="toggle-btn" onclick="toggleProdMode('monthly')">📆 Mensual</button>
+  </div>
+
+  <!-- ANNUAL MODE -->
+  <div id="prod-annual-mode">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="zones-grid">
+      <!-- Zona A annual -->
+      <div class="zone-card">
+        <div class="zone-header zone-a">☀ Zona A</div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="field">
+              <label>kWp asignados Zona A</label>
+              <input type="number" id="prod-a-kwp" value="0" step="0.1" oninput="calcProduction()">
+            </div>
+            <div class="field">
+              <label>Irradiación anual (kWh/m²/año)</label>
+              <input type="number" id="prod-a-irad" value="1800" step="1" oninput="calcProduction()">
+            </div>
+          </div>
+          <button onclick="estimateFromLatitude('a')" style="margin-top:10px;padding:6px 14px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius);font-size:12px;cursor:pointer;">🔍 Estimar Zona A</button>
+          <div class="outdated-warn" id="outdated-a" style="margin-top:6px;">⚠ Parámetros modificados — pulsa Estimar para actualizar</div>
+          <div id="prod-a-note" style="font-size:11px;color:var(--text-muted);margin-top:6px;"></div>
+          <div id="prod-a-results" style="margin-top:10px;"></div>
+        </div>
+      </div>
+      <!-- Zona B annual -->
+      <div class="zone-card">
+        <div class="zone-header zone-b">☀ Zona B</div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="field">
+              <label>kWp asignados Zona B</label>
+              <input type="number" id="prod-b-kwp" value="0" step="0.1" oninput="calcProduction()">
+            </div>
+            <div class="field">
+              <label>Irradiación anual (kWh/m²/año)</label>
+              <input type="number" id="prod-b-irad" value="1700" step="1" oninput="calcProduction()">
+            </div>
+          </div>
+          <button onclick="estimateFromLatitude('b')" style="margin-top:10px;padding:6px 14px;background:#1e6b6b;color:#fff;border:none;border-radius:var(--radius);font-size:12px;cursor:pointer;">🔍 Estimar Zona B</button>
+          <div class="outdated-warn" id="outdated-b" style="margin-top:6px;">⚠ Parámetros modificados — pulsa Estimar para actualizar</div>
+          <div id="prod-b-note" style="font-size:11px;color:var(--text-muted);margin-top:6px;"></div>
+          <div id="prod-b-results" style="margin-top:10px;"></div>
+        </div>
+      </div>
+    </div>
+    <div id="prod-annual-total" class="card" style="margin-top:0;"></div>
+  </div>
+
+  <!-- MONTHLY MODE -->
+  <div id="prod-monthly-mode" style="display:none;">
+    <div id="monthly-inputs-a" class="card"></div>
+    <div id="monthly-inputs-b" class="card" style="margin-top:0;"></div>
+    <div id="monthly-table-container" class="card" style="margin-top:0;"></div>
+  </div>
+
+  <div class="info-box" style="margin-top:4px;">
+    <span class="ico">ℹ️</span>
+    <span>Para mayor precisión se recomienda verificar con <strong>PVGIS</strong> (re.jrc.ec.europa.eu). HSP: 1 kWh/m² = 1 HSP. Fórmula: E = kWp × HSP × PR × Disponibilidad</span>
+  </div>
+</section>
+
+<!-- ========== SECCIÓN 10: VERIFICACIÓN FINAL DEL DISEÑO ========== -->
+<section class="section" id="sec-10">
+  <div class="pdf-section-header">
+    <div class="psh-left"><div><div class="psh-company">Piamonte Servicios Integrales S.A. · Dpto. Ingeniería</div><div class="psh-title">§10 — Verificación Final del Diseño</div></div></div>
+    <div class="psh-right">Dimensionamiento Fotovoltaico</div>
+  </div>
+  <div class="section-title"><span class="num">10</span>Verificación Final del Diseño</div>
+
+  <div id="design-status-bar2" class="card" style="padding:14px 20px;display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px;">
+    <span id="global-status-icon" style="font-size:22px;">⏳</span>
+    <span id="global-status-text">Calculando...</span>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="icon">✅</span>Ítems de Verificación</div>
+    <div id="checklist-body"></div>
+  </div>
+</section>
+
+<!-- ========== SECCIÓN 11: REFERENCIAS NORMATIVAS APLICADAS ========== -->
+<section class="section" id="sec-11">
+  <div class="pdf-section-header">
+    <div class="psh-left"><div><div class="psh-company">Piamonte Servicios Integrales S.A. · Dpto. Ingeniería</div><div class="psh-title">§11 — Referencias Normativas Aplicadas</div></div></div>
+    <div class="psh-right">Dimensionamiento Fotovoltaico</div>
+  </div>
+  <div class="section-title"><span class="num">11</span>Referencias Normativas Aplicadas</div>
+
+  <div class="card">
+    <div class="card-header"><span class="icon">📜</span>Normativa Aplicada</div>
+    <div class="card-body" style="padding:0;">
+      <table class="norm-table">
+        <thead>
+          <tr>
+            <th style="width:180px;">Norma</th>
+            <th>Aplicación en la herramienta</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>REBT ITC-BT-40</td>
+            <td>Factor Iz ≥ 1.25 × Isc en conductores DC de instalaciones generadoras. Caída de tensión calculada con Idiseño = 1.25 × Isc</td>
+          </tr>
+          <tr>
+            <td>REBT ITC-BT-40</td>
+            <td>Factor Idiseño = 1.25 × Inominal en conductores AC de instalaciones generadoras. Caída de tensión calculada con Idiseño</td>
+          </tr>
+          <tr>
+            <td>UNE-HD 60364-5-52</td>
+            <td>Tabla de capacidades de conducción Iz para cobre y aluminio, XLPE y PVC, métodos B1 y E, hasta 300 mm²</td>
+          </tr>
+          <tr>
+            <td>IEC 62548 §8.4</td>
+            <td>Obligatoriedad de fusible gPV cuando hay combinación externa de strings en paralelo</td>
+          </tr>
+          <tr>
+            <td>IEC 60269-6</td>
+            <td>Calibres normalizados de fusibles gPV y rango de selección (1.25×Isc – 2.0×Isc)</td>
+          </tr>
+          <tr>
+            <td>RD 244/2019 / IDAE</td>
+            <td>Recomendación de caída de tensión DC ≤ 1.5%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card no-print">
+    <div class="card-header"><span class="icon">⚙</span>Módulos y Funciones de la Aplicación</div>
+    <div class="card-body" style="padding:0;overflow-x:auto;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Función</th>
+            <th>Responsabilidad</th>
+            <th>Se dispara cuando...</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>updateLogic()</td><td>Orquestador principal. Calcula distribución y lanza todos los subcálculos</td><td>Cambio en datos de panel, inversor o temperaturas</td></tr>
+          <tr><td>buildGrid()</td><td>Construye tarjetas HTML de cada MPPT y string. Modo auto/manual</td><td>Cambio en MPPTs, entradas/MPPT o modo manual</td></tr>
+          <tr><td>refreshGridData()</td><td>Rellena valores eléctricos en cada tarjeta de string (V, I, paneles, iconos, colores)</td><td>Llamada desde updateLogic()</td></tr>
+          <tr><td>refreshCablesData()</td><td>Calcula secciones mínimas DC (por MPPT) y AC</td><td>Llamada desde updateLogic() o cambio en longitudes</td></tr>
+          <tr><td>calcPowerSummary()</td><td>Calcula kWp, ratio DC/AC, Voc string, ∑Imp/∑Isc por MPPT y avisos</td><td>Llamada desde updateLogic()</td></tr>
+          <tr><td>calcProtectionsDC()</td><td>Calcula Isc en barras DC, fusible gPV normalizado</td><td>Llamada desde updateLogic()</td></tr>
+          <tr><td>updateChecklist()</td><td>Genera tabla de verificación final con 9 ítems normativos</td><td>Llamada desde updateLogic()</td></tr>
+          <tr><td>calcShadowsZone(z)</td><td>Motor astronómico + cálculo geométrico de sombras para zona A o B</td><td>Cambio en cualquier parámetro de sombras de esa zona</td></tr>
+          <tr><td>calcProduction()</td><td>Calcula producción anual/mensual para Zona A y B independientemente</td><td>Cambio en kWp, PR, disponibilidad, precio o irradiación</td></tr>
+          <tr><td>estimateFromLatitude(z)</td><td>Estima irradiación en plano inclinado usando GHI por latitud + corrección Liu &amp; Jordan</td><td>Botón "Estimar Zona A/B"</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+</div><!-- #main -->
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let gridMode = 'auto';
+let manualStrings = {};   // mpptIdx -> nStrings
+let manualPanels = {};    // mpptIdx -> stringIdx -> nPanels
+let logoDataURL = null;
+let promoterLogoDataURL = null;
+let prodMode = 'annual';
+let monthlyIrrA = Array(12).fill(150);
+let monthlyIrrB = Array(12).fill(140);
+
+
+// ============================================================
+// RESET - Nuevo Proyecto
+// ============================================================
+function resetAllFields() {
+  if (!confirm('¿Seguro que quieres empezar un nuevo proyecto?\n\nSe borrarán TODOS los campos. Esta acción no se puede deshacer.')) return;
+  document.querySelectorAll('input, select, textarea').forEach(function(el) {
+    if (el.type === 'file') return;
+    if (el.type === 'checkbox' || el.type === 'radio') {
+      el.checked = el.defaultChecked;
+    } else {
+      el.value = el.defaultValue !== undefined ? el.defaultValue : '';
+    }
+  });
+  gridMode = 'auto';
+  manualStrings = {};
+  manualPanels = {};
+  logoDataURL = null;
+  promoterLogoDataURL = null;
+  prodMode = 'annual';
+  monthlyIrrA = Array(12).fill(150);
+  monthlyIrrB = Array(12).fill(140);
+  var headerImg = document.getElementById('logo-preview-header');
+  if (headerImg) { headerImg.src = ''; headerImg.style.display = 'none'; }
+  var promoterLogoImg = document.getElementById('promoter-logo-preview-big');
+  if (promoterLogoImg) { promoterLogoImg.src = ''; }
+  var promoterLogoArea = document.getElementById('promoter-logo-preview-area');
+  if (promoterLogoArea) promoterLogoArea.style.display = 'none';
+  var coverPromoterLogo = document.getElementById('cover-promoter-logo');
+  if (coverPromoterLogo) { coverPromoterLogo.src = ''; coverPromoterLogo.style.display = 'none'; }
+  try { localStorage.removeItem('piamonte_autosave'); } catch(e) {}
+  updateLogic();
+  calcShadowsZone('a');
+  calcShadowsZone('b');
+  calcProduction();
+  showSection(0);
+}
+
+// Capacidades Iz (Cu/Al, XLPE/PVC, B1/E) en A — UNE-HD 60364-5-52 simplificada
+// secciones: 1.5,2.5,4,6,10,16,25,35,50,70,95,120,150,185,240,300
+const SECTIONS = [1.5,2.5,4,6,10,16,25,35,50,70,95,120,150,185,240,300];
+// Iz por sección [Cu-XLPE-B1, Cu-XLPE-E, Cu-PVC-B1, Cu-PVC-E, Al-XLPE-B1, Al-XLPE-E, Al-PVC-B1, Al-PVC-E]
+const IZ_TABLE = {
+  'cu-xlpe-B1':[18.5,24,31,41,57,76,101,125,151,192,232,269,300,341,400,458],
+  'cu-xlpe-E': [22,30,40,52,73,99,131,162,196,251,304,352,406,463,546,629],
+  'cu-pvc-B1': [17,23,30,38,52,69,90,111,133,168,201,232,258,294,344,394],
+  'cu-pvc-E':  [19.5,27,36,46,63,85,112,138,168,213,258,299,344,392,461,530],
+  'al-xlpe-B1':[null,null,null,null,44,59,79,97,118,150,181,210,240,272,317,365],
+  'al-xlpe-E': [null,null,null,null,57,77,101,125,151,193,234,272,313,358,421,486],
+  'al-pvc-B1': [null,null,null,null,40,54,72,88,106,134,161,186,210,238,278,317],
+  'al-pvc-E':  [null,null,null,null,49,66,86,106,128,162,197,228,263,300,354,406],
+};
+
+const FUSIBLES_GPV = [2,4,6,8,10,12,15,16,20,25,30,32,40,50,63];
+const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+// GHI mensual por latitud (PVGIS-SARAH2 aproximado) — [lat28..lat55] en kWh/m²/mes
+const GHI_TABLE = {
+  28:[119,120,163,190,213,224,229,213,178,150,120,109],
+  30:[113,116,157,183,207,218,224,209,174,144,116,105],
+  32:[107,112,151,177,201,213,219,205,169,139,110,100],
+  34:[100,107,144,170,195,207,213,200,163,132,104,94],
+  36:[93,102,137,163,188,201,207,195,157,126,98,88],
+  38:[86,96,130,156,181,195,201,189,150,119,91,81],
+  40:[79,89,122,148,174,188,195,183,143,112,84,74],
+  42:[71,82,114,140,166,181,188,176,135,104,76,67],
+  44:[64,75,105,131,157,173,180,168,127,96,68,59],
+  46:[56,67,97,122,148,165,172,159,118,88,60,51],
+  48:[48,59,88,112,138,156,163,150,109,79,52,43],
+  50:[41,51,79,102,128,147,153,140,100,70,44,35],
+  52:[33,43,70,92,118,138,144,131,91,61,36,27],
+  55:[22,31,57,78,103,124,130,118,78,48,26,18],
+};
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showSection(idx) {
+  document.querySelectorAll('.section').forEach((s,i) => s.classList.toggle('active', i===idx));
+  document.querySelectorAll('.nav-tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+}
+
+// ============================================================
+// LOGO
+// ============================================================
+function loadLogo(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    logoDataURL = e.target.result;
+    document.getElementById('logo-preview-header').src = logoDataURL;
+    document.getElementById('logo-preview-header').style.display = 'block';
+    document.getElementById('logo-preview-big').src = logoDataURL;
+    document.getElementById('logo-preview-area').style.display = 'block';
+    document.getElementById('cover-logo').src = logoDataURL;
+    document.getElementById('cover-logo').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+function removeLogo() {
+  logoDataURL = null;
+  document.getElementById('logo-preview-header').style.display = 'none';
+  document.getElementById('logo-preview-area').style.display = 'none';
+  document.getElementById('cover-logo').style.display = 'none';
+}
+
+function loadPromoterLogo(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    promoterLogoDataURL = e.target.result;
+    document.getElementById('promoter-logo-preview-big').src = promoterLogoDataURL;
+    document.getElementById('promoter-logo-preview-area').style.display = 'block';
+    document.getElementById('cover-promoter-logo').src = promoterLogoDataURL;
+    document.getElementById('cover-promoter-logo').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removePromoterLogo() {
+  promoterLogoDataURL = null;
+  document.getElementById('promoter-logo-preview-area').style.display = 'none';
+  document.getElementById('cover-promoter-logo').style.display = 'none';
+}
+
+// ============================================================
+// COVER
+// ============================================================
+function updateCover() {
+  try {
+    const name = document.getElementById('proj-name')?.value || 'Planta Fotovoltaica';
+    const loc = document.getElementById('proj-locality')?.value || '—';
+    const promoter = document.getElementById('proj-promoter')?.value || 'Promotor';
+    const date = document.getElementById('proj-date')?.value;
+    
+    // Nuevos elementos de portada (los únicos que existen)
+    const coverPromoter = document.getElementById('cover-promoter');
+    if (coverPromoter) coverPromoter.textContent = promoter;
+    
+    const coverLocalityLarge = document.getElementById('cover-locality-large');
+    if (coverLocalityLarge) coverLocalityLarge.textContent = loc;
+    
+    const coverDate = document.getElementById('cover-date');
+    if (coverDate) coverDate.textContent = date ? new Date(date+'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}) : '—';
+  } catch (err) {
+    console.error('Error en updateCover:', err);
+  }
+}
+
+// ============================================================
+// MAIN LOGIC
+// ============================================================
+function v(id) { return parseFloat(document.getElementById(id).value)||0; }
+function vi(id) { return parseInt(document.getElementById(id).value)||0; }
+function vs(id) { return document.getElementById(id).value; }
+
+// ============================================================
+// COMPUTE DESIGN STATE — única fuente de verdad
+// Devuelve todas las magnitudes del diseño leyendo el estado real
+// (respeta modo manual o auto) para que resumen/checklist/alertas
+// sean siempre coherentes con el grid MPPT.
+// ============================================================
+function computeDesignState() {
+  const totalPanels  = vi('p-total');
+  const totalStrings = vi('p-strings');
+  const nMppt        = vi('inv-mpptn');
+  const invInputs    = vi('inv-inputs');
+  const voc = v('p-voc'), vmp = v('p-vmp'), isc = v('p-isc'), imp = v('p-imp');
+  const coef = v('p-coef');
+  const tmin = v('t-min'), tmax = v('t-max');
+  const invVmax = v('inv-vmax'), invVmin = v('inv-vmin');
+  const invImax = v('inv-imax'), invIscMax = v('inv-iscmax');
+
+  // Protección contra división por cero
+  const safeStrings = totalStrings > 0 ? totalStrings : 1;
+  const safeMppt    = nMppt > 0 ? nMppt : 1;
+
+  // --- Reparto automático base ---
+  const basePanPerStr = Math.floor(totalPanels / safeStrings);
+  const panRemainder  = totalPanels % safeStrings;
+  const baseStrPerMppt = Math.floor(safeStrings / safeMppt);
+  const strRemainder  = safeStrings % safeMppt;
+
+  // --- Construir distribución real (por MPPT, por string) ---
+  // mppts[m] = { nStrings, strings: [nPan, nPan, ...] }
+  const mppts = [];
+  let globalStrIdx = 0;
+  for (let m = 0; m < safeMppt; m++) {
+    const nStr = (gridMode === 'manual' && manualStrings[m] !== undefined)
+      ? manualStrings[m]
+      : baseStrPerMppt + (m < strRemainder ? 1 : 0);
+    const strings = [];
+    for (let s = 0; s < nStr; s++) {
+      let nPan;
+      if (gridMode === 'manual' && manualPanels[m] && manualPanels[m][s] !== undefined) {
+        nPan = manualPanels[m][s];
+      } else {
+        nPan = basePanPerStr + (globalStrIdx < panRemainder ? 1 : 0);
+      }
+      strings.push(nPan);
+      globalStrIdx++;
+    }
+    mppts.push({ index: m, nStrings: nStr, strings });
+  }
+
+  // --- Coeficientes de temperatura por panel ---
+  const vocColdFactor = 1 + (coef/100) * (tmin - 25);
+  const vmpHotFactor  = 1 + (coef/100) * (tmax - 25);
+  const vocColdPerPanel = voc * vocColdFactor;
+  const vmpHotPerPanel  = vmp * vmpHotFactor;
+
+  // --- Análisis por MPPT ---
+  let worstVocStrCold = 0;  // el más alto
+  let worstVmpStrHot  = Infinity; // el más bajo (distinto de 0)
+  let worstSumImp = 0, worstSumIsc = 0;
+  let anyMismatch = false;
+  let anyError = false, anyWarn = false;
+
+  mppts.forEach(mppt => {
+    const sumImp = mppt.strings.length * imp;
+    const sumIsc = mppt.strings.length * isc;
+    if (sumImp > worstSumImp) worstSumImp = sumImp;
+    if (sumIsc > worstSumIsc) worstSumIsc = sumIsc;
+
+    // Mismatch: strings con distinto número de paneles dentro del mismo MPPT
+    if (mppt.strings.length > 1) {
+      const first = mppt.strings[0];
+      if (mppt.strings.some(n => n !== first)) anyMismatch = true;
+    }
+
+    mppt.strings.forEach(nPan => {
+      const vocStr = vocColdPerPanel * nPan;
+      const vmpStr = vmpHotPerPanel * nPan;
+      if (vocStr > worstVocStrCold) worstVocStrCold = vocStr;
+      if (nPan > 0 && vmpStr < worstVmpStrHot) worstVmpStrHot = vmpStr;
+      if (vocStr > invVmax) anyError = true;
+      if (vmpStr < invVmin) anyError = true;
+      else if (vmpStr < invVmin * 1.1) anyWarn = true;
+    });
+
+    if (sumImp > invImax)   anyError = true;
+    if (sumIsc > invIscMax) anyError = true;
+  });
+  if (worstVmpStrHot === Infinity) worstVmpStrHot = 0;
+
+  // --- Potencia ---
+  const pUnit = v('p-power');
+  const kwp = totalPanels * pUnit / 1000;
+  const pac = v('inv-pac');
+  const ratio = pac > 0 ? kwp / (pac/1000) : 0;
+
+  // --- Strings por entrada física (peor MPPT = más strings) ---
+  const maxStrInAnyMppt = mppts.reduce((mx, mp) => Math.max(mx, mp.nStrings), 0);
+  const strPerInput = invInputs > 0 ? maxStrInAnyMppt / invInputs : 0;
+
+  return {
+    // magnitudes por panel
+    voc, vmp, isc, imp, vocColdPerPanel, vmpHotPerPanel,
+    // distribución
+    mppts, maxStrInAnyMppt,
+    // peores casos
+    worstVocStrCold, worstVmpStrHot, worstSumImp, worstSumIsc,
+    // globales
+    kwp, pac, ratio, totalPanels, totalStrings,
+    // límites inversor
+    invVmax, invVmin, invImax, invIscMax, invInputs, nMppt: safeMppt,
+    // flags
+    anyMismatch, anyError, anyWarn,
+    strPerInput,
+  };
+}
+
+// ============================================================
+// SYNC TOTALES DESDE MANUAL GRID
+// Cuando el usuario edita strings/paneles en modo manual,
+// p-total y p-strings se recalculan automáticamente como la
+// suma real del grid, y pasan a ser solo-lectura.
+// ============================================================
+function syncTotalsFromManualGrid() {
+  if (gridMode !== 'manual') return;
+  let sumStr = 0, sumPan = 0;
+  Object.keys(manualStrings).forEach(m => {
+    sumStr += manualStrings[m] || 0;
+  });
+  Object.keys(manualPanels).forEach(m => {
+    const mppt = manualPanels[m] || {};
+    Object.keys(mppt).forEach(s => { sumPan += mppt[s] || 0; });
+  });
+  // Si algún MPPT tiene strings pero no entradas en manualPanels aún,
+  // hay que contar los paneles que se dibujaron por defecto del grid actual.
+  // Recorrer el DOM del grid para sumar todos los strings visibles.
+  const strCards = document.querySelectorAll('#mppt-grid-container .string-card');
+  if (strCards.length > 0) {
+    sumStr = strCards.length;
+    sumPan = 0;
+    strCards.forEach(sc => {
+      const inp = sc.querySelector('input.string-panels-input');
+      if (inp) {
+        sumPan += parseInt(inp.value) || 0;
+      } else {
+        const strong = sc.querySelector('.string-title strong');
+        if (strong) sumPan += parseInt(strong.textContent) || 0;
+      }
+    });
+  }
+  document.getElementById('p-strings').value = Math.max(sumStr, 1);
+  document.getElementById('p-total').value   = Math.max(sumPan, 1);
+  // Actualizar paneles/string calculado
+  if (sumStr > 0 && sumPan > 0) {
+    const basePerStr = Math.floor(sumPan / sumStr);
+    const remainder  = sumPan % sumStr;
+    document.getElementById('p-per-string').value = remainder > 0
+      ? `${basePerStr}–${basePerStr+1} (${remainder} strings con +1)`
+      : basePerStr;
+  }
+}
+
+function applyPanelsFieldLock() {
+  const pTotal   = document.getElementById('p-total');
+  const pStrings = document.getElementById('p-strings');
+  const locked = (gridMode === 'manual');
+  [pTotal, pStrings].forEach(el => {
+    if (!el) return;
+    el.readOnly = locked;
+    if (locked) {
+      el.style.background = '#f5f5f5';
+      el.style.color = 'var(--primary)';
+      el.style.fontWeight = '700';
+      el.style.cursor = 'not-allowed';
+      el.title = 'Bloqueado: en modo manual estos valores reflejan la suma real del grid. Cambia a modo Auto para editarlos.';
+    } else {
+      el.style.background = '';
+      el.style.color = '';
+      el.style.fontWeight = '';
+      el.style.cursor = '';
+      el.title = '';
+    }
+  });
+}
+
+function updateLogic() {
+  const totalPanels = vi('p-total');
+  const totalStrings = vi('p-strings');
+  // Validación: strings > 0
+  if (totalStrings <= 0 || totalPanels <= 0) {
+    document.getElementById('p-per-string').value = '—';
+    document.getElementById('temp-status-box').innerHTML = `<span class="semaphore red">ERROR: Paneles y strings deben ser > 0</span>`;
+    return;
+  }
+  const basePerStr = Math.floor(totalPanels / totalStrings);
+  const remainder = totalPanels % totalStrings;
+  document.getElementById('p-per-string').value = remainder > 0
+    ? `${basePerStr}–${basePerStr+1} (${remainder} strings con +1)`
+    : basePerStr;
+
+  // temp calcs
+  const voc = v('p-voc'), vmp = v('p-vmp'), coef = v('p-coef');
+  const tmin = v('t-min'), tmax = v('t-max');
+  const vocCold = voc * (1 + (coef/100) * (tmin - 25));
+  const vmpHot  = vmp * (1 + (coef/100) * (tmax - 25));
+  const invVmax = v('inv-vmax'), invVmin = v('inv-vmin');
+  const maxPanStr = invVmax > 0 && vocCold > 0 ? Math.floor(invVmax / vocCold) : '—';
+  const minPanStr = vmpHot > 0 ? Math.ceil(invVmin / vmpHot) : '—';
+
+  document.getElementById('voc-cold').textContent = vocCold.toFixed(2);
+  document.getElementById('vmp-hot').textContent  = vmpHot.toFixed(2);
+  document.getElementById('max-panels-str').textContent = maxPanStr;
+  document.getElementById('min-panels-str').textContent = minPanStr;
+
+  // check temp status
+  const strLen = basePerStr + (remainder > 0 ? 1 : 0); // worst-case string
+  const vocStr = vocCold * strLen;
+  const vmpStr = vmpHot * basePerStr;
+  let tempColor = 'green', tempMsg = 'Diseño de temperatura válido';
+  if (vocStr > invVmax) { tempColor = 'red'; tempMsg = `ERROR: Voc string (${vocStr.toFixed(1)}V) supera Vmax inversor (${invVmax}V)`; }
+  else if (vmpStr < invVmin) { tempColor = 'red'; tempMsg = `ERROR: Vmp string (${vmpStr.toFixed(1)}V) inferior a Vmin MPPT (${invVmin}V)`; }
+  else if (vmpStr < invVmin * 1.1) { tempColor = 'orange'; tempMsg = `AVISO: Vmp string (${vmpStr.toFixed(1)}V) próxima al mínimo MPPT (${invVmin}V)`; }
+  document.getElementById('temp-status-box').innerHTML = `<span class="semaphore ${tempColor}">${tempMsg}</span>`;
+
+  buildGrid();
+  calcPowerSummary();
+  refreshCablesData();
+  calcProtectionsDC();
+  updateChecklist();
+}
+
+// ============================================================
+// GRID
+// ============================================================
+function setGridMode(mode) {
+  gridMode = mode;
+  if (mode === 'auto') { manualStrings = {}; manualPanels = {}; }
+  document.getElementById('mode-auto-btn').classList.toggle('active', mode==='auto');
+  document.getElementById('mode-manual-btn').classList.toggle('active', mode==='manual');
+  applyPanelsFieldLock();
+  buildGrid();
+  if (mode === 'manual') syncTotalsFromManualGrid();
+  calcPowerSummary();
+  refreshCablesData();
+  calcProtectionsDC();
+  updateChecklist();
+}
+
+function buildGrid() {
+  const nMppt = vi('inv-mpptn');
+  const totalStrings = vi('p-strings');
+  const totalPanels = vi('p-total');
+  const invInputs = vi('inv-inputs');
+
+  // Auto distribution
+  const strPerMppt = Math.floor(totalStrings / nMppt);
+  const strRemainder = totalStrings % nMppt;
+  const panPerStr = Math.floor(totalPanels / totalStrings);
+  const panRemainder = totalPanels % totalStrings;
+
+  const container = document.getElementById('mppt-grid-container');
+  container.innerHTML = '';
+
+  let globalStrIdx = 0;
+
+  for (let m = 0; m < nMppt; m++) {
+    let nStr = gridMode === 'manual' && manualStrings[m] !== undefined
+      ? manualStrings[m]
+      : strPerMppt + (m < strRemainder ? 1 : 0);
+
+    const card = document.createElement('div');
+    card.className = 'mppt-card';
+    card.id = `mppt-card-${m}`;
+
+    const hdr = document.createElement('div');
+    hdr.className = 'mppt-header';
+    hdr.innerHTML = `<span>MPPT ${m+1}</span><span id="mppt-badge-${m}" style="font-size:11px;"></span>`;
+    card.appendChild(hdr);
+
+    if (gridMode === 'manual') {
+      const strCtrl = document.createElement('div');
+      strCtrl.style.cssText = 'padding:6px 10px;background:#f0f4f8;display:flex;align-items:center;gap:8px;font-size:12px;';
+      strCtrl.innerHTML = `<label style="font-size:11px;font-weight:600;color:var(--text-muted);">Strings:</label>
+        <input type="number" min="0" max="20" value="${nStr}" style="width:60px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:12px;" onchange="manualStrings[${m}]=parseInt(this.value)||0;buildGrid();syncTotalsFromManualGrid();calcPowerSummary();refreshCablesData();calcProtectionsDC();updateChecklist();">`;
+      card.appendChild(strCtrl);
+    }
+
+    const body = document.createElement('div');
+    body.className = 'mppt-body';
+
+    for (let s = 0; s < nStr; s++) {
+      let nPan;
+      if (gridMode === 'manual' && manualPanels[m] && manualPanels[m][s] !== undefined) {
+        nPan = manualPanels[m][s];
+      } else {
+        nPan = panPerStr + (globalStrIdx < panRemainder ? 1 : 0);
+      }
+      const sc = buildStringCard(m, s, nPan, globalStrIdx);
+      body.appendChild(sc);
+      globalStrIdx++;
+    }
+
+    card.appendChild(body);
+
+    // Totals bar
+    const totBar = document.createElement('div');
+    totBar.className = 'mppt-totals';
+    totBar.id = `mppt-totals-${m}`;
+    card.appendChild(totBar);
+
+    container.appendChild(card);
+  }
+
+  refreshGridData();
+}
+
+function buildStringCard(mIdx, sIdx, nPan, globalIdx) {
+  const sc = document.createElement('div');
+  sc.className = 'string-card';
+  sc.id = `string-${mIdx}-${sIdx}`;
+
+  const title = document.createElement('div');
+  title.className = 'string-title';
+  if (gridMode === 'manual') {
+    title.innerHTML = `<span>String ${globalIdx+1}</span><input type="number" min="1" max="200" value="${nPan}" class="string-panels-input" onchange="if(!manualPanels[${mIdx}])manualPanels[${mIdx}]={};manualPanels[${mIdx}][${sIdx}]=parseInt(this.value)||1;refreshGridData();syncTotalsFromManualGrid();calcPowerSummary();refreshCablesData();calcProtectionsDC();updateChecklist();">`;
+  } else {
+    title.innerHTML = `<span>String ${globalIdx+1}</span><strong style="font-size:15px;color:var(--primary);">${nPan}</strong>`;
+  }
+  sc.appendChild(title);
+
+  const icons = document.createElement('div');
+  icons.className = 'panel-icons';
+  for (let i = 0; i < Math.min(nPan, 40); i++) {
+    const pi = document.createElement('div');
+    pi.className = 'panel-icon';
+    icons.appendChild(pi);
+  }
+  if (nPan > 40) {
+    const more = document.createElement('span');
+    more.style.cssText = 'font-size:9px;color:var(--text-muted);align-self:center;';
+    more.textContent = `+${nPan-40}`;
+    icons.appendChild(more);
+  }
+  sc.appendChild(icons);
+
+  const dataDiv = document.createElement('div');
+  dataDiv.className = 'string-data';
+  dataDiv.id = `sdata-${mIdx}-${sIdx}`;
+  sc.appendChild(dataDiv);
+
+  return sc;
+}
+
+function refreshGridData() {
+  const nMppt = vi('inv-mpptn');
+  const voc = v('p-voc'), vmp = v('p-vmp'), isc = v('p-isc'), imp = v('p-imp');
+  const coef = v('p-coef');
+  const tmin = v('t-min'), tmax = v('t-max');
+  const invVmax = v('inv-vmax'), invVmin = v('inv-vmin');
+  const invImax = v('inv-imax'), invIscMax = v('inv-iscmax');
+
+  for (let m = 0; m < nMppt; m++) {
+    const mpptCard = document.getElementById(`mppt-card-${m}`);
+    if (!mpptCard) continue;
+    const stringCards = mpptCard.querySelectorAll('.string-card');
+    let sumImp = 0, sumIsc = 0;
+    let mpptStatus = 'valid';
+
+    stringCards.forEach((sc, s) => {
+      const panInput = sc.querySelector('input[type=number]');
+      let nPan;
+      if (gridMode === 'manual' && manualPanels[m] && manualPanels[m][s] !== undefined) {
+        nPan = manualPanels[m][s];
+      } else if (panInput && gridMode === 'manual') {
+        nPan = parseInt(panInput.value)||1;
+      } else {
+        const titleStrong = sc.querySelector('.string-title strong');
+        nPan = titleStrong ? parseInt(titleStrong.textContent)||1 : 1;
+      }
+
+      const vocCold = voc * (1 + (coef/100) * (tmin-25)) * nPan;
+      const vmpHot  = vmp * (1 + (coef/100) * (tmax-25)) * nPan;
+      sumImp += imp;
+      sumIsc += isc;
+
+      const dd = document.getElementById(`sdata-${m}-${s}`);
+      if (dd) {
+        dd.innerHTML = `
+          <span>Paneles serie:</span><strong>${nPan}</strong>
+          <span>Voc frío:</span><strong>${vocCold.toFixed(1)} V</strong>
+          <span>Vmp calor:</span><strong>${vmpHot.toFixed(1)} V</strong>
+          <span>Isc / Imp:</span><strong>${isc.toFixed(2)} / ${imp.toFixed(2)} A</strong>
+        `;
+        let strStatus = 'valid';
+        if (vocCold > invVmax) strStatus = 'error';
+        else if (vmpHot < invVmin) strStatus = 'error';
+        else if (vmpHot < invVmin * 1.1) strStatus = 'warning';
+        sc.style.borderLeft = strStatus==='error'?`3px solid var(--danger)`:strStatus==='warning'?`3px solid var(--warning)`:`3px solid var(--success)`;
+        if (strStatus !== 'valid') mpptStatus = strStatus;
+      }
+    });
+
+    // Totals bar
+    const totBar = document.getElementById(`mppt-totals-${m}`);
+    const impOk = sumImp <= invImax;
+    const iscOk = sumIsc <= invIscMax;
+    if (!impOk || !iscOk) mpptStatus = 'error';
+    if (totBar) {
+      totBar.innerHTML = `
+        <span class="${impOk?'ok':'err'}">∑Imp: ${sumImp.toFixed(2)}A / ${invImax}A</span>
+        <span class="${iscOk?'ok':'err'}">∑Isc: ${sumIsc.toFixed(2)}A / ${invIscMax}A</span>
+      `;
+    }
+
+    // Card border
+    const card = document.getElementById(`mppt-card-${m}`);
+    if (card) card.className = `mppt-card ${mpptStatus}`;
+    const badge = document.getElementById(`mppt-badge-${m}`);
+    if (badge) badge.innerHTML = `<span class="semaphore ${mpptStatus}" style="font-size:10px;">${mpptStatus==='valid'?'OK':mpptStatus==='warning'?'AVISO':'ERROR'}</span>`;
+  }
+}
+
+// ============================================================
+// POWER SUMMARY
+// ============================================================
+function calcPowerSummary() {
+  const st = computeDesignState();
+
+  document.getElementById('kwp-total').textContent = st.kwp.toFixed(2);
+  document.getElementById('prod-kwp').textContent  = st.kwp.toFixed(2);
+  document.getElementById('voc-string-cold').textContent = st.worstVocStrCold.toFixed(1);
+  document.getElementById('imp-mppt').textContent  = st.worstSumImp.toFixed(2);
+  document.getElementById('isc-mppt').textContent  = st.worstSumIsc.toFixed(2);
+  document.getElementById('strings-per-mppt').textContent = st.maxStrInAnyMppt;
+
+  // Ratio semaphore
+  const ratioEl = document.getElementById('ratio-dc-ac');
+  const ratioCard = document.getElementById('ratio-dc-ac-card');
+  ratioEl.textContent = st.ratio.toFixed(2);
+  if (st.ratio >= 1.0 && st.ratio <= 1.5) ratioCard.style.color = 'var(--success)';
+  else if (st.ratio < 1.0) ratioCard.style.color = 'var(--warning)';
+  else ratioCard.style.color = 'var(--danger)';
+
+  // Alerts (ahora reflejan el reparto REAL, sea manual o auto)
+  const alerts = document.getElementById('summary-alerts');
+  alerts.innerHTML = '';
+  if (st.worstSumImp > st.invImax) alerts.innerHTML += `<div class="info-box" style="background:var(--danger-bg);border-color:#fca5a5;border-left-color:var(--danger);color:var(--danger);">⚠ ∑Imp (${st.worstSumImp.toFixed(2)}A) supera Imax/MPPT (${st.invImax}A)</div>`;
+  if (st.worstSumIsc > st.invIscMax) alerts.innerHTML += `<div class="info-box" style="background:var(--danger-bg);border-color:#fca5a5;border-left-color:var(--danger);color:var(--danger);">⚠ ∑Isc (${st.worstSumIsc.toFixed(2)}A) supera Isc_máx/MPPT (${st.invIscMax}A)</div>`;
+  if (st.worstVocStrCold > st.invVmax) alerts.innerHTML += `<div class="info-box" style="background:var(--danger-bg);border-color:#fca5a5;border-left-color:var(--danger);color:var(--danger);">⚠ Voc string frío (${st.worstVocStrCold.toFixed(1)}V) supera Vmax inversor (${st.invVmax}V)</div>`;
+  if (st.ratio > 1.5) alerts.innerHTML += `<div class="info-box warning">⚠ Ratio DC/AC (${st.ratio.toFixed(2)}) > 1.5: riesgo de clipping</div>`;
+  if (st.ratio < 1.0 && st.ratio > 0) alerts.innerHTML += `<div class="info-box warning">⚠ Ratio DC/AC (${st.ratio.toFixed(2)}) < 1.0: campo FV infradimensionado</div>`;
+  if (st.anyMismatch) alerts.innerHTML += `<div class="info-box warning">⚠ Mismatch detectado: hay MPPT con strings de distinto número de paneles. Pérdidas por desacoplo — evaluar reagrupación.</div>`;
+
+  // Status bar
+  const statusBar = document.getElementById('design-status-bar');
+  const allOk = !st.anyError
+              && st.worstVocStrCold <= st.invVmax
+              && st.ratio >= 1.0 && st.ratio <= 1.5;
+  statusBar.className = allOk ? '' : 'error';
+  statusBar.style.cssText = allOk
+    ? 'background:var(--success-bg);border:1px solid #6ee7b7;border-radius:var(--radius-lg);padding:14px 20px;display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px;color:var(--success);transition:all .3s;'
+    : 'background:var(--danger-bg);border:1px solid #fca5a5;border-radius:var(--radius-lg);padding:14px 20px;display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px;color:var(--danger);transition:all .3s;';
+  document.getElementById('status-text').textContent = allOk ? 'Diseño válido — Parámetros principales cumplidos' : 'Diseño con avisos — Revisar parámetros marcados';
+
+  calcProduction();
+}
+
+// ============================================================
+// CABLES
+// ============================================================
+function getIz(material, insul, method) {
+  const key = `${material}-${insul}-${method}`;
+  return IZ_TABLE[key] || IZ_TABLE['cu-xlpe-B1'];
+}
+
+// Tablas Iz para 3 conductores cargados (trifásica) — UNE-HD 60364-5-52
+// UNIPOLAR
+const IZ_TABLE_TRI = {
+  'cu-xlpe-B1':[15.5,21,28,36,50,68,89,110,134,171,207,239,272,310,364,419],
+  'cu-xlpe-E': [18.5,25,34,44,61,83,110,137,167,214,259,301,346,396,468,540],
+  'cu-pvc-B1': [14.5,19.5,27,34,46,61,80,99,118,149,179,206,232,263,304,349],
+  'cu-pvc-E':  [17.5,24,32,41,57,76,96,119,144,184,223,259,299,341,403,464],
+  'al-xlpe-B1':[null,null,null,null,39,53,69,86,104,133,161,186,212,242,282,324],
+  'al-xlpe-E': [null,null,null,null,47,64,85,106,130,166,201,234,268,307,362,419],
+  'al-pvc-B1': [null,null,null,null,36,47,63,77,92,116,139,160,182,206,237,274],
+  'al-pvc-E':  [null,null,null,null,44,59,75,92,112,143,174,201,232,265,313,361],
+};
+
+// Tablas Iz para cable MULTIPOLAR (manguera) — 2 conductores cargados (monofásica)
+// Método B = multipolar en tubo, E = multipolar al aire
+const IZ_TABLE_MULTI = {
+  'cu-xlpe-B': [17,23,30,38,52,69,90,111,134,171,207,239,271,310,364,419],
+  'cu-xlpe-E': [19.5,27,36,48,66,91,119,148,180,232,282,328,379,434,514,593],
+  'cu-pvc-B':  [15.5,21,27,36,50,66,84,104,125,160,194,225,260,297,350,404],
+  'cu-pvc-E':  [17.5,24,33,43,60,80,101,126,153,196,238,276,319,364,430,497],
+  'al-xlpe-B': [null,null,null,null,40,54,70,86,104,133,161,186,212,242,282,324],
+  'al-xlpe-E': [null,null,null,null,51,70,92,114,140,179,217,252,291,334,396,456],
+  'al-pvc-B':  [null,null,null,null,38,51,66,81,99,125,150,174,200,228,266,306],
+  'al-pvc-E':  [null,null,null,null,46,61,79,98,120,154,187,217,251,287,338,389],
+};
+
+// Tablas Iz para cable MULTIPOLAR — 3 conductores cargados (trifásica)
+const IZ_TABLE_MULTI_TRI = {
+  'cu-xlpe-B': [14.5,19.5,26,33,45,60,78,96,117,149,180,208,236,268,315,360],
+  'cu-xlpe-E': [16.5,23,31,42,57,78,102,127,155,199,241,280,322,369,437,504],
+  'cu-pvc-B':  [13.5,18,24,31,42,56,73,89,108,136,164,188,216,245,286,328],
+  'cu-pvc-E':  [15,20.5,28,36,50,68,89,110,134,171,207,240,277,317,374,430],
+  'al-xlpe-B': [null,null,null,null,35,46,61,75,91,116,140,161,184,210,245,281],
+  'al-xlpe-E': [null,null,null,null,44,60,79,98,120,153,186,216,249,286,338,390],
+  'al-pvc-B':  [null,null,null,null,32,43,57,70,84,107,129,149,170,194,227,261],
+  'al-pvc-E':  [null,null,null,null,39,53,67,83,101,129,156,181,208,239,282,324],
+};
+
+function getIzTri(material, insul, method) {
+  const key = `${material}-${insul}-${method}`;
+  return IZ_TABLE_TRI[key] || IZ_TABLE_TRI['cu-xlpe-B1'];
+}
+
+function getIzMulti(material, insul, method) {
+  // Multipolar en tubo usa método B (no B1), al aire sigue siendo E
+  const methodKey = method === 'B1' ? 'B' : method;
+  const key = `${material}-${insul}-${methodKey}`;
+  return IZ_TABLE_MULTI[key] || IZ_TABLE_MULTI['cu-xlpe-B'];
+}
+
+function getIzMultiTri(material, insul, method) {
+  const methodKey = method === 'B1' ? 'B' : method;
+  const key = `${material}-${insul}-${methodKey}`;
+  return IZ_TABLE_MULTI_TRI[key] || IZ_TABLE_MULTI_TRI['cu-xlpe-B'];
+}
+
+function selectSection(Imin, Iz_arr) {
+  for (let i=0;i<SECTIONS.length;i++) {
+    if (Iz_arr[i] !== null && Iz_arr[i] >= Imin) return SECTIONS[i];
+  }
+  return '>300';
+}
+
+function calcSectionDC(lenM, imp, isc, dropMaxPct, vmpStr) {
+  const material = 'cu'; // DC siempre Cu
+  const insulDC = vs('c-insul-dc');
+  // Resistividad a temperatura máxima de servicio (REBT / UNE-HD 60364-5-52)
+  // XLPE 90°C → γ=44 → ρ=1/44=0.02273   |   PVC 70°C → γ=48 → ρ=1/48=0.02083
+  const rho = insulDC === 'pvc' ? 0.02083 : 0.02273;
+  // Corriente de diseño DC: 1.25 × Isc (ITC-BT-40)
+  const iDesignDC = 1.25 * isc;
+  // Por caída: S = 2 * rho * L * Idiseño / (dV) — criterio conservador ITC-BT-40
+  const dV = vmpStr * dropMaxPct / 100;
+  const sByDrop = dV > 0 ? 2 * rho * lenM * iDesignDC / dV : Infinity;
+  // Por criterio térmico: Iz >= 1.25 * Isc
+  const izMin = iDesignDC;
+  const izArr = getIz(material, vs('c-insul-dc'), vs('c-method-dc'));
+  const sByTherm = selectSection(izMin, izArr);
+
+  let finalS, criteria;
+  const sDropCeil = SECTIONS.find(s => s >= sByDrop) || '>300';
+  const bothNumeric = typeof sDropCeil === 'number' && typeof sByTherm === 'number';
+  if (!bothNumeric) {
+    finalS = '>300'; criteria = 'Revisar';
+  } else if (sDropCeil > sByTherm) {
+    finalS = sDropCeil; criteria = 'Caída V.';
+  } else if (sByTherm > sDropCeil) {
+    finalS = sByTherm; criteria = 'Criterio Térmico';
+  } else {
+    finalS = sByTherm; criteria = 'Iguales';
+  }
+  if (typeof finalS === 'number' && finalS < 4) { finalS = 4; criteria += ' (mín. 4mm²)'; }
+  return { section: finalS, criteria };
+}
+
+function refreshCablesData() {
+  const nMppt = vi('inv-mpptn');
+  const imp = v('p-imp'), isc = v('p-isc');
+  const dropDC = v('c-drop-dc');
+
+  // Vmp string for worst-case mppt
+  const panPerStr = Math.floor(vi('p-total') / vi('p-strings'));
+  const vmpStr = v('p-vmp') * (1 + (v('p-coef')/100)*(v('t-max')-25)) * panPerStr;
+
+  // DC table — rebuild solo si nº de filas cambió; si no, actualizar resultados
+  const tbody = document.getElementById('dc-cables-table');
+  const existingRows = tbody.querySelectorAll('tr');
+  const needsRebuild = existingRows.length !== nMppt;
+
+  if (needsRebuild) {
+    tbody.innerHTML = '';
+    for (let m = 0; m < nMppt; m++) {
+      const lenId = `dc-len-${m}`;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>MPPT ${m+1}</strong></td>
+        <td><input id="${lenId}" type="number" value="20" min="1" style="width:70px;" oninput="refreshCablesData()"></td>
+        <td class="dc-imp">—</td>
+        <td class="dc-isc">—</td>
+        <td class="dc-section"><strong style="color:var(--primary);">—</strong></td>
+        <td class="dc-criteria"><span style="font-size:11px;color:var(--text-muted);">—</span></td>
+      `;
+      tbody.appendChild(tr);
+    }
+  }
+
+  // Actualizar valores calculados sin tocar el input de longitud (preserva foco/cursor)
+  for (let m = 0; m < nMppt; m++) {
+    const lenEl = document.getElementById(`dc-len-${m}`);
+    const lenVal = lenEl ? parseFloat(lenEl.value)||20 : 20;
+    const r = calcSectionDC(lenVal, imp, isc, dropDC, vmpStr);
+    const row = tbody.querySelectorAll('tr')[m];
+    if (!row) continue;
+    row.querySelector('.dc-imp').textContent = (isc * 1.25).toFixed(2);
+    row.querySelector('.dc-isc').textContent = isc.toFixed(2);
+    row.querySelector('.dc-section').innerHTML = `<strong style="color:var(--primary);">${r.section} mm²</strong>`;
+    row.querySelector('.dc-criteria').innerHTML = `<span style="font-size:11px;color:var(--text-muted);">${r.criteria}</span>`;
+  }
+
+  // AC
+  const pac = v('inv-pac');
+  const system = vs('inv-system');
+  const lenAC = v('c-len-ac');
+  const material = vs('c-material-ac');
+  const insul = vs('c-insul-ac');
+  const method = vs('c-method-ac');
+  const dropAC = v('c-drop-ac');
+
+  // Resistividad a temperatura máxima de servicio (REBT / UNE-HD 60364-5-52)
+  // Cu: XLPE 90°C → ρ=1/44=0.02273 | PVC 70°C → ρ=1/48=0.02083
+  // Al: XLPE 90°C → ρ=1/28=0.03571 | PVC 70°C → ρ=1/29=0.03448
+  let rho;
+  if (material === 'cu') rho = insul === 'pvc' ? 0.02083 : 0.02273;
+  else                   rho = insul === 'pvc' ? 0.03448 : 0.03571;
+
+  const phases = system === 'tri' ? 3 : 1;
+  const voltage = system === 'tri' ? 400 : 230;
+  const Inom = pac > 0 ? pac / (Math.sqrt(phases)*voltage) : 0;
+  const Idesign = Inom * 1.25;
+  const dVmax = voltage * dropAC / 100;
+  const kFactor = system === 'tri' ? Math.sqrt(3) : 2;
+  const sAC_drop = dVmax > 0 ? kFactor * rho * lenAC * Idesign / dVmax : Infinity;
+
+  // Selección de tabla Iz según tipo de cable y sistema (mono/tri)
+  const cableType = vs('c-cabletype-ac') || 'multi';
+  let izArr;
+  if (cableType === 'multi') {
+    izArr = system === 'tri' ? getIzMultiTri(material, insul, method) : getIzMulti(material, insul, method);
+  } else {
+    izArr = system === 'tri' ? getIzTri(material, insul, method) : getIz(material, insul, method);
+  }
+  const izMin = Idesign;
+  const sAC_therm_val = selectSection(izMin, izArr);
+  const sAC_drop_ceil = SECTIONS.find(s => s >= sAC_drop) || '>300';
+
+  let finalAC, criteriaAC;
+  const bothNumericAC = typeof sAC_drop_ceil === 'number' && typeof sAC_therm_val === 'number';
+  if (!bothNumericAC) { finalAC='>300'; criteriaAC='Revisar'; }
+  else if (sAC_drop_ceil > sAC_therm_val) { finalAC=sAC_drop_ceil; criteriaAC='Caída V.'; }
+  else if (sAC_therm_val > sAC_drop_ceil) { finalAC=sAC_therm_val; criteriaAC='Criterio Térmico'; }
+  else { finalAC=sAC_therm_val; criteriaAC='Iguales'; }
+
+  // Al min 16mm²
+  const alWarn = material==='al' && typeof finalAC==='number' && finalAC<16 ? '<br><span style="color:var(--danger);font-size:11px;">⚠ Aluminio mín. 16mm²— cambiar a Cu o verificar</span>' : '';
+
+  document.getElementById('ac-cable-result').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;">
+      <div><span style="font-size:11px;color:var(--text-muted);">Sistema</span><br><strong>${system==='tri'?'Trifásico 400V':'Monofásico 230V'}</strong></div>
+      <div><span style="font-size:11px;color:var(--text-muted);">Cable</span><br><strong>${cableType==='multi'?'Multipolar':'Unipolar'}</strong></div>
+      <div><span style="font-size:11px;color:var(--text-muted);">Inom AC</span><br><strong>${Inom.toFixed(2)} A</strong></div>
+      <div><span style="font-size:11px;color:var(--text-muted);">Idiseño (×1.25)</span><br><strong>${Idesign.toFixed(2)} A</strong></div>
+      <div><span style="font-size:11px;color:var(--text-muted);">Sección mínima</span><br><strong style="color:var(--primary);font-size:16px;">${finalAC} mm²</strong></div>
+      <div><span style="font-size:11px;color:var(--text-muted);">Criterio</span><br><strong>${criteriaAC}</strong></div>
+    </div>${alWarn}
+  `;
+}
+
+// ============================================================
+// PROTECTIONS
+// ============================================================
+function calcProtectionsDC() {
+  const nMppt = vi('inv-mpptn');
+  const invInputs = vi('inv-inputs');
+  const isc = v('p-isc');
+  const tbody = document.getElementById('prot-table');
+  tbody.innerHTML = '';
+
+  const strPerMppt_base = Math.floor(vi('p-strings') / nMppt);
+  const strRem = vi('p-strings') % nMppt;
+
+  for (let m = 0; m < nMppt; m++) {
+    let nStr;
+    if (gridMode === 'manual' && manualStrings[m] !== undefined) {
+      nStr = manualStrings[m];
+    } else {
+      nStr = strPerMppt_base + (m < strRem ? 1 : 0);
+    }
+
+    const iscBarra = isc * nStr;
+    const strPerInput = nStr / invInputs;
+    const unionType = strPerInput <= 1 ? 'Interna (fabricante)' : 'Externa (instalador)';
+    const needFuse = strPerInput > 1;
+
+    let fusibleHtml = '';
+    const minF = 1.25 * isc;
+    const maxF = 2.0 * isc;
+    const calibre = FUSIBLES_GPV.find(f => f >= minF && f <= maxF);
+    const calibreRef = calibre ? `${calibre} A` : `Sin calibre (${minF.toFixed(1)}–${maxF.toFixed(1)} A)`;
+
+    if (!needFuse) {
+      fusibleHtml = `<span class="semaphore green">No obligatorio</span>`
+        + `<br><span style="font-size:10px;color:var(--text-muted);">Ref. si se desea instalar: <strong>${calibreRef}</strong> gPV</span>`;
+    } else {
+      if (calibre) {
+        // Verificar contra Iz del cable string (usa aislante/método DC, sección mínima 4mm²)
+        const izArr = getIz('cu', vs('c-insul-dc'), vs('c-method-dc'));
+        const iz4mm = izArr[SECTIONS.indexOf(4)];
+        const cableOk = iz4mm && calibre <= iz4mm;
+        fusibleHtml = `<span class="semaphore orange">${calibre} A — OBLIGATORIO</span>`
+          + (cableOk
+              ? `<br><span style="font-size:10px;color:var(--text-muted);">In≤Iz cable 4mm² (${iz4mm}A) ✓</span>`
+              : `<br><span style="font-size:10px;color:var(--danger);">⚠ Verificar Iz cable ≥ ${calibre}A (UNE-EN 60269-6)</span>`);
+      } else {
+        fusibleHtml = `<span class="semaphore red">Sin calibre (${minF.toFixed(1)}–${maxF.toFixed(1)} A)</span>`;
+      }
+    }
+
+    const tr = document.createElement('tr');
+    const ratio = nStr / invInputs;
+    const ratioText = `${nStr} / ${invInputs}${ratio > 1 ? ` <span style="color:var(--text-muted);font-size:11px;">(${ratio.toFixed(1)} str/entr.)</span>` : ''}`;
+    tr.innerHTML = `
+      <td><strong>MPPT ${m+1}</strong></td>
+      <td>${nStr}</td>
+      <td>${ratioText}</td>
+      <td>${iscBarra.toFixed(2)} A</td>
+      <td style="font-size:12px;">${unionType}</td>
+      <td>${fusibleHtml}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+// ============================================================
+// SHADOWS
+// ============================================================
+function calcShadowsZone(z) {
+  const lat  = v(`sh-${z}-lat`) * Math.PI / 180;
+  const dec  = -23.45 * Math.PI / 180; // solsticio invierno
+  const ha   = -30 * Math.PI / 180;    // 10:00h solar
+  const beta = v(`sh-${z}-beta`) * Math.PI / 180;
+  const az   = v(`sh-${z}-az`);
+  const orient = vs(`sh-${z}-orient`);
+  const type = vs(`sh-${z}-type`);
+  const pH = v(`sh-${z}-h`);
+  const pW = v(`sh-${z}-w`);
+
+  // Solar position (fórmula estándar — atan2 para azimut evita ambigüedad de cuadrante)
+  const sinAlpha = Math.sin(lat)*Math.sin(dec) + Math.cos(lat)*Math.cos(dec)*Math.cos(ha);
+  const alpha = Math.asin(Math.max(-1, Math.min(1, sinAlpha)));
+  // Azimut medido desde el sur, positivo hacia el oeste (convención solar norte hemisferio)
+  const sinPsi = Math.cos(dec) * Math.sin(ha);
+  const cosPsi = Math.cos(ha) * Math.sin(lat) - Math.tan(dec) * Math.cos(lat);
+  const psi = Math.atan2(sinPsi, cosPsi);
+  const alphaDeg = alpha * 180/Math.PI;
+  const psiDeg = psi * 180/Math.PI;
+
+  document.getElementById(`sh-${z}-elev`).textContent = alphaDeg.toFixed(1);
+  document.getElementById(`sh-${z}-solaz`).textContent = psiDeg.toFixed(1);
+
+  if (alphaDeg <= 0) {
+    document.getElementById(`sh-${z}-status`).innerHTML = '<span class="semaphore red">El sol está bajo el horizonte — sin luz directa</span>';
+    return;
+  }
+
+  const L = orient === 'vert' ? pH : pW;
+  const h = L * Math.sin(beta);
+  const p = L * Math.cos(beta);
+  const dAz = (psiDeg - az) * Math.PI / 180;
+  const d = Math.abs(alphaDeg) > 0.1 ? h * Math.cos(dAz) / Math.tan(alpha) : 999;
+  const pitch = p + Math.max(0, d);
+
+  document.getElementById(`sh-${z}-height`).textContent = h.toFixed(2);
+  document.getElementById(`sh-${z}-occup`).textContent = p.toFixed(2);
+  document.getElementById(`sh-${z}-d`).textContent = d > 100 ? '>100' : d.toFixed(2);
+  document.getElementById(`sh-${z}-pitch`).textContent = pitch > 100 ? '>100' : pitch.toFixed(2);
+
+  const statusEl = document.getElementById(`sh-${z}-status`);
+  if (type === 'roof') {
+    if (pitch <= 3.0) statusEl.innerHTML = `<span class="semaphore green">Pitch ${pitch.toFixed(2)} m — OK para tejado</span>`;
+    else statusEl.innerHTML = `<span class="semaphore orange">Pitch ${pitch.toFixed(2)} m > 3.0 m — Considera bajar inclinación</span>`;
+  } else {
+    if (pitch <= 7.0) statusEl.innerHTML = `<span class="semaphore green">Pitch ${pitch.toFixed(2)} m — Dato razonable para terreno</span>`;
+    else statusEl.innerHTML = `<span class="semaphore red">Pitch ${pitch.toFixed(2)} m > 7.0 m — Dato inusualmente grande</span>`;
+  }
+}
+
+function markIrradOutdated(z) {
+  document.getElementById(`outdated-${z}`).style.display = 'block';
+}
+
+// ============================================================
+// PRODUCTION
+// ============================================================
+function toggleProdMode(mode) {
+  prodMode = mode;
+  document.getElementById('prod-annual-mode').style.display = mode==='annual'?'flex':'none';
+  document.getElementById('prod-monthly-mode').style.display = mode==='monthly'?'flex':'none';
+  document.querySelectorAll('.toggle-btn').forEach((b,i)=>b.classList.toggle('active',i===(mode==='annual'?0:1)));
+  if (mode==='annual') {
+    document.getElementById('prod-annual-mode').style.flexDirection='column';
+    document.getElementById('prod-annual-mode').style.gap='16px';
+  }
+  if (mode==='monthly') buildMonthlyInputs();
+  calcProduction();
+}
+
+function buildMonthlyInputs() {
+  const cA = document.getElementById('monthly-inputs-a');
+  const cB = document.getElementById('monthly-inputs-b');
+  if (cA.innerHTML) return; // already built
+
+  cA.innerHTML = `<div class="card-header" style="background:var(--primary);color:#fff;"><span class="icon">☀</span>Irradiación Mensual — Zona A (kWh/m²/mes)</div><div class="card-body"><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;">
+    ${MONTHS.map((m,i)=>`<div class="field"><label>${m}</label><input type="number" id="mirrA-${i}" value="${monthlyIrrA[i]}" step="1" min="0" oninput="monthlyIrrA[${i}]=parseFloat(this.value)||0;calcProduction()"></div>`).join('')}
+  </div>
+  <button onclick="estimateFromLatitude('a')" style="margin-top:10px;padding:6px 14px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius);font-size:12px;cursor:pointer;">🔍 Estimar Zona A</button>
+  <div class="outdated-warn" id="outdated-a-m" style="margin-top:6px;">⚠ Parámetros modificados — pulsa Estimar</div>
+  </div>`;
+
+  cB.innerHTML = `<div class="card-header" style="background:#1e6b6b;color:#fff;"><span class="icon">☀</span>Irradiación Mensual — Zona B (kWh/m²/mes)</div><div class="card-body"><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;">
+    ${MONTHS.map((m,i)=>`<div class="field"><label>${m}</label><input type="number" id="mirrB-${i}" value="${monthlyIrrB[i]}" step="1" min="0" oninput="monthlyIrrB[${i}]=parseFloat(this.value)||0;calcProduction()"></div>`).join('')}
+  </div>
+  <button onclick="estimateFromLatitude('b')" style="margin-top:10px;padding:6px 14px;background:#1e6b6b;color:#fff;border:none;border-radius:var(--radius);font-size:12px;cursor:pointer;">🔍 Estimar Zona B</button>
+  <div class="outdated-warn" id="outdated-b-m" style="margin-top:6px;">⚠ Parámetros modificados — pulsa Estimar</div>
+  </div>`;
+}
+
+function calcProduction() {
+  const pr = v('prod-pr');
+  const avail = v('prod-avail') / 100;
+  const price = v('prod-price');
+
+  function calcZone(kwp, irad) {
+    if (kwp <= 0 || irad <= 0) return null;
+    const E = kwp * irad * pr * avail;
+    const hsp = irad;
+    const saving = E * price;
+    return { E, hsp, saving, daily: E/365 };
+  }
+
+  if (prodMode === 'annual') {
+    const kwpA = v('prod-a-kwp'), kwpB = v('prod-b-kwp');
+    const iradA = v('prod-a-irad'), iradB = v('prod-b-irad');
+    const rA = calcZone(kwpA, iradA);
+    const rB = calcZone(kwpB, iradB);
+
+    const showZone = (id, r) => {
+      if (!r) { document.getElementById(id).innerHTML='<p style="font-size:12px;color:var(--text-muted);">kWp = 0 — asignar potencia</p>'; return; }
+      document.getElementById(id).innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;">
+          <div class="kpi-card"><div class="kpi-label">Producción Anual</div><div class="kpi-value" style="font-size:18px;">${r.E.toFixed(0)}<span class="kpi-unit">kWh/año</span></div></div>
+          <div class="kpi-card"><div class="kpi-label">Ahorro Anual</div><div class="kpi-value" style="font-size:18px;">${r.saving.toFixed(0)}<span class="kpi-unit">€/año</span></div></div>
+          <div class="kpi-card"><div class="kpi-label">HSP Anuales</div><div class="kpi-value" style="font-size:18px;">${r.hsp.toFixed(0)}</div></div>
+          <div class="kpi-card"><div class="kpi-label">Media Diaria</div><div class="kpi-value" style="font-size:18px;">${r.daily.toFixed(1)}<span class="kpi-unit">kWh/día</span></div></div>
+        </div>`;
+    };
+    showZone('prod-a-results', rA);
+    showZone('prod-b-results', rB);
+
+    const totalE = (rA?rA.E:0) + (rB?rB.E:0);
+    const totalSave = (rA?rA.saving:0) + (rB?rB.saving:0);
+    const totalC = document.getElementById('prod-annual-total');
+    if (totalE > 0) {
+      totalC.innerHTML = `<div class="card-header"><span class="icon">📊</span>Totales Anuales</div>
+      <div class="card-body"><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">
+        <div class="kpi-card highlight"><div class="kpi-label">Producción Total</div><div class="kpi-value">${totalE.toFixed(0)}<span class="kpi-unit">kWh/año</span></div></div>
+        <div class="kpi-card highlight"><div class="kpi-label">Ahorro Total</div><div class="kpi-value">${totalSave.toFixed(0)}<span class="kpi-unit">€/año</span></div></div>
+        <div class="kpi-card"><div class="kpi-label">Media Diaria</div><div class="kpi-value">${(totalE/365).toFixed(1)}<span class="kpi-unit">kWh/día</span></div></div>
+      </div></div>`;
+    } else {
+      totalC.innerHTML = '';
+    }
+
+  } else {
+    // Monthly
+    const kwpA = v('prod-a-kwp') || 0;
+    const kwpB = v('prod-b-kwp') || 0;
+    let tableHTML = `<div class="card-header" style="background:var(--primary-dark);color:#fff;"><span class="icon">📅</span>Tabla de Producción Mensual</div><div class="card-body" style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Mes</th><th>Irrad A (kWh/m²)</th><th>Irrad B (kWh/m²)</th><th>Producción Total (kWh)</th><th>HSP</th><th>Ahorro (€)</th><th>Distribución</th></tr></thead><tbody>`;
+    let totalEm=0, totalSm=0;
+    MONTHS.forEach((m,i) => {
+      const iA = monthlyIrrA[i], iB = monthlyIrrB[i];
+      const eA = kwpA * iA * pr * avail;
+      const eB = kwpB * iB * pr * avail;
+      const eTotal = eA + eB;
+      const hsp = kwpA > 0 ? iA : iB;
+      const saving = eTotal * price;
+      totalEm += eTotal; totalSm += saving;
+      const maxRef = Math.max(...monthlyIrrA, ...monthlyIrrB, 1);
+      const barW = Math.round(Math.max(iA,iB) / maxRef * 80);
+      tableHTML += `<tr>
+        <td><strong>${m}</strong></td>
+        <td>${iA.toFixed(0)}</td>
+        <td>${iB.toFixed(0)}</td>
+        <td><strong>${eTotal.toFixed(0)}</strong></td>
+        <td>${hsp.toFixed(0)}</td>
+        <td>${saving.toFixed(0)}</td>
+        <td><div class="month-bar" style="width:${barW}px;"></div></td>
+      </tr>`;
+    });
+    tableHTML += `<tr style="background:#e8edf3;font-weight:700;"><td>TOTAL</td><td>—</td><td>—</td><td>${totalEm.toFixed(0)}</td><td>—</td><td>${totalSm.toFixed(0)}</td><td></td></tr>`;
+    tableHTML += '</tbody></table></div>';
+    document.getElementById('monthly-table-container').innerHTML = tableHTML;
+  }
+}
+
+// ============================================================
+// ESTIMATE IRRADIANCE (Liu & Jordan)
+// ============================================================
+function estimateFromLatitude(z) {
+  const lat  = v(`sh-${z}-lat`);
+  const beta = v(`sh-${z}-beta`);
+  const azEl = v(`sh-${z}-az`);
+
+  // Aviso si latitud fuera de rango de la tabla (extrapolación = poco fiable)
+  if (lat < 28 || lat > 55) {
+    const ok = confirm(`Latitud ${lat}° está fuera del rango de la tabla GHI (28°–55°). La estimación usará el extremo más cercano y puede ser imprecisa. ¿Continuar?`);
+    if (!ok) return;
+  }
+
+  // GHI interpolation
+  const lats = Object.keys(GHI_TABLE).map(Number).sort((a,b)=>a-b);
+  function interpolateGHI(month) {
+    let lo = lats[0], hi = lats[lats.length-1];
+    for (let i=0;i<lats.length-1;i++) {
+      if (lat >= lats[i] && lat <= lats[i+1]) { lo=lats[i]; hi=lats[i+1]; break; }
+    }
+    if (lat <= lats[0]) return GHI_TABLE[lats[0]][month];
+    if (lat >= lats[lats.length-1]) return GHI_TABLE[lats[lats.length-1]][month];
+    const t = (lat-lo)/(hi-lo);
+    return GHI_TABLE[lo][month] * (1-t) + GHI_TABLE[hi][month] * t;
+  }
+
+  const decs = [-20.9,-13.0,-2.4,9.4,18.8,23.4,21.2,13.5,2.2,-9.6,-18.9,-23.3].map(d=>d*Math.PI/180);
+  const DAYS_IN_MONTH = [31,28,31,30,31,30,31,31,30,31,30,31];
+  const betaR = beta * Math.PI / 180;
+  const latR  = lat  * Math.PI / 180;
+  const albedo = v('prod-albedo') || 0.20;
+
+  const monthly = decs.map((dec, i) => {
+    const ghi = interpolateGHI(i);
+    // kT and diffuse fraction
+    const days = DAYS_IN_MONTH[i];
+    const ghiDay = ghi / days; // kWh/m²/day
+    const kT = Math.min(0.85, Math.max(0.2, ghiDay / 10)); // rough clearness index
+    const kd = kT < 0.22 ? 1 - 0.09*kT : kT < 0.8 ? 0.9511 - 0.1604*kT + 4.388*kT*kT - 16.638*kT*kT*kT + 12.336*kT*kT*kT*kT : 0.165;
+    const diff = ghi * kd;
+    const beam = ghi - diff;
+
+    // Geometric factor Rb
+    const hsArg = Math.max(-1, Math.min(1, -Math.tan(latR)*Math.tan(dec)));
+    const hs = Math.acos(hsArg); // sunrise hour angle
+    const hst = Math.acos(Math.min(1, Math.max(-1, -Math.tan(latR-betaR)*Math.tan(dec))));
+    const hss = Math.min(hs, hst);
+    const A = Math.cos(latR-betaR)*Math.cos(dec)*Math.sin(hss) + hss*Math.sin(latR-betaR)*Math.sin(dec);
+    const B = Math.cos(latR)*Math.cos(dec)*Math.sin(hs) + hs*Math.sin(latR)*Math.sin(dec);
+    const Rb = B > 0 ? A / B : 0;
+
+    const Ht = beam * Math.max(0, Rb) + diff*(1+Math.cos(betaR))/2 + ghi*albedo*(1-Math.cos(betaR))/2;
+    return Math.max(0, Ht);
+  });
+
+  const totalAnnual = monthly.reduce((a,b)=>a+b, 0);
+
+  if (prodMode === 'annual') {
+    document.getElementById(`prod-${z}-irad`).value = totalAnnual.toFixed(0);
+    document.getElementById(`prod-${z}-note`).textContent = `Estimado para lat ${lat}°, β=${beta}°, az=${azEl}° → ${totalAnnual.toFixed(0)} kWh/m²/año`;
+    document.getElementById(`outdated-${z}`).style.display = 'none';
+  } else {
+    monthlyIrrA = z==='a' ? monthly.map(v=>Math.round(v)) : monthlyIrrA;
+    monthlyIrrB = z==='b' ? monthly.map(v=>Math.round(v)) : monthlyIrrB;
+    monthly.forEach((val,i) => {
+      const el = document.getElementById(`mirr${z.toUpperCase()}-${i}`);
+      if (el) el.value = Math.round(val);
+    });
+    const owId = z==='a' ? 'outdated-a-m' : 'outdated-b-m';
+    const ow = document.getElementById(owId);
+    if (ow) ow.style.display = 'none';
+  }
+  calcProduction();
+}
+
+// ============================================================
+// CHECKLIST
+// ============================================================
+function updateChecklist() {
+  const st = computeDesignState();
+  const isc = st.isc;
+  const invVmax = st.invVmax, invVmin = st.invVmin;
+  const invImax = st.invImax, invIscMax = st.invIscMax;
+  const vocStrCold = st.worstVocStrCold;
+  const vmpStrHot  = st.worstVmpStrHot;
+  const sumImp = st.worstSumImp;
+  const sumIsc = st.worstSumIsc;
+  const ratio = st.ratio;
+  const dropDCpct = v('c-drop-dc');
+  const strPerInput = st.strPerInput;
+  const needFuse = strPerInput > 1;
+  let fuseCalibre = null;
+  if (needFuse) {
+    const minF = 1.25*isc, maxF = 2.0*isc;
+    fuseCalibre = FUSIBLES_GPV.find(f => f>=minF && f<=maxF) || null;
+  }
+
+  const items = [
+    {
+      label: 'Voc String (frío) ≤ Vmax Inversor',
+      vals: `${vocStrCold.toFixed(1)} V ≤ ${invVmax} V`,
+      ok: vocStrCold <= invVmax,
+      warn: false,
+      result: vocStrCold <= invVmax ? 'OK' : 'ERROR'
+    },
+    {
+      label: 'Vmp String (calor) ≥ Vmin MPPT',
+      vals: `${vmpStrHot.toFixed(1)} V ≥ ${invVmin} V`,
+      ok: vmpStrHot >= invVmin,
+      warn: vmpStrHot >= invVmin && vmpStrHot < invVmin*1.1,
+      result: vmpStrHot < invVmin ? 'ERROR' : (vmpStrHot < invVmin*1.1 ? 'AVISO' : 'OK')
+    },
+    {
+      label: '∑Isc MPPT ≤ Isc Máx./MPPT',
+      vals: `${sumIsc.toFixed(2)} A ≤ ${invIscMax} A`,
+      ok: sumIsc <= invIscMax,
+      warn: false,
+      result: sumIsc <= invIscMax ? 'OK' : 'ERROR'
+    },
+    {
+      label: '∑Imp MPPT ≤ Imax Oper./MPPT',
+      vals: `${sumImp.toFixed(2)} A ≤ ${invImax} A`,
+      ok: sumImp <= invImax,
+      warn: false,
+      result: sumImp <= invImax ? 'OK' : 'ERROR'
+    },
+    {
+      label: 'Strings/entrada — fusible gPV',
+      vals: `${strPerInput.toFixed(1)} str/entrada`,
+      ok: !needFuse || fuseCalibre !== null,
+      warn: needFuse && fuseCalibre !== null,
+      result: !needFuse ? 'OK' : (fuseCalibre ? `OBLIGATORIO ${fuseCalibre}A gPV` : 'ERROR — sin calibre')
+    },
+    {
+      label: 'Ratio DC/AC entre 1.0 y 1.5',
+      vals: `${ratio.toFixed(2)}`,
+      ok: ratio>=1.0 && ratio<=1.5,
+      warn: ratio<1.0,
+      result: ratio>=1.0&&ratio<=1.5 ? 'OK' : (ratio<1.0 ? 'AVISO' : 'ERROR')
+    },
+    {
+      label: 'Caída tensión DC configurada',
+      vals: `${dropDCpct}% — calculada con Idiseño = 1.25 × Isc`,
+      ok: dropDCpct <= 1.5,
+      warn: dropDCpct > 1.5,
+      result: dropDCpct <= 1.5 ? 'OK' : `AVISO — ${dropDCpct}% > 1.5%`
+    },
+    {
+      label: 'Factor ITC-BT-40 aplicado (AC)',
+      vals: 'Idiseño AC = 1.25 × Inom — aplicado a térmico y caída de tensión',
+      ok: true,
+      warn: false,
+      result: 'OK'
+    },
+    {
+      label: 'Factor ITC-BT-40 aplicado (DC)',
+      vals: 'Idiseño DC = 1.25 × Isc — aplicado a térmico y caída de tensión',
+      ok: true,
+      warn: false,
+      result: 'OK'
+    },
+    {
+      label: 'Strings homogéneos dentro de cada MPPT',
+      vals: st.anyMismatch ? 'Hay MPPT con strings desiguales' : 'Todos los strings de cada MPPT son iguales',
+      ok: !st.anyMismatch,
+      warn: st.anyMismatch,
+      result: st.anyMismatch ? 'AVISO — mismatch' : 'OK'
+    },
+  ];
+
+  const body = document.getElementById('checklist-body');
+  body.innerHTML = '';
+  let hasErrors = false;
+  items.forEach(item => {
+    const isOk = item.ok && !item.warn;
+    const isErr = !item.ok && !item.warn;
+    const isWarn = item.warn || (item.ok && item.result!=='OK' && !isErr);
+    if (isErr) hasErrors = true;
+
+    let iconClass = isErr ? 'err' : (isWarn ? 'warn' : 'ok');
+    let iconChar = isErr ? '✗' : (isWarn ? '!' : '✓');
+    let badgeStyle = isErr
+      ? 'background:var(--danger-bg);color:var(--danger);font-weight:700;font-size:11px;padding:3px 8px;border-radius:4px;'
+      : isWarn
+      ? 'background:var(--warning-bg);color:var(--warning);font-weight:700;font-size:11px;padding:3px 8px;border-radius:4px;'
+      : 'background:var(--success-bg);color:var(--success);font-weight:700;font-size:11px;padding:3px 8px;border-radius:4px;';
+
+    const div = document.createElement('div');
+    div.className = 'checklist-item';
+    div.innerHTML = `
+      <div class="check-icon ${iconClass}">${iconChar}</div>
+      <div class="check-desc">
+        <div>${item.label}</div>
+        <div class="values">${item.vals}</div>
+      </div>
+      <span style="${badgeStyle}">${item.result}</span>
+    `;
+    body.appendChild(div);
+  });
+
+  // Global status
+  const gsIcon = document.getElementById('global-status-icon');
+  const gsText = document.getElementById('global-status-text');
+  const gsBar = document.getElementById('design-status-bar2');
+  if (!hasErrors) {
+    gsIcon.textContent = '✅';
+    gsText.textContent = 'Diseño completamente válido — Todos los parámetros cumplen normativa';
+    gsBar.style.cssText = 'padding:14px 20px;display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px;background:var(--success-bg);border:1px solid #6ee7b7;border-radius:var(--radius-lg);color:var(--success);';
+  } else {
+    gsIcon.textContent = '❌';
+    gsText.textContent = 'Diseño con errores — Revisar ítems en rojo';
+    gsBar.style.cssText = 'padding:14px 20px;display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px;background:var(--danger-bg);border:1px solid #fca5a5;border-radius:var(--radius-lg);color:var(--danger);';
+  }
+}
+
+// ============================================================
+// PDF
+// ============================================================
+function downloadPDF() {
+  updateCover();
+  window.print();
+}
+
+// ============================================================
+// EXPORT / IMPORT PROJECT (JSON)
+// ============================================================
+function exportProject() {
+  // Serializar todos los inputs, selects y textareas con id
+  const inputs = {};
+  document.querySelectorAll('#main input[id], #main select[id], #main textarea[id]').forEach(el => {
+    if (el.type === 'file') return;
+    inputs[el.id] = el.value;
+  });
+  const payload = {
+    version: 1,
+    created: new Date().toISOString(),
+    inputs,
+    gridMode,
+    manualStrings,
+    manualPanels,
+    monthlyIrrA,
+    monthlyIrrB,
+    prodMode,
+    logoDataURL,
+    promoterLogoDataURL,
+  };
+  const name = (document.getElementById('proj-name').value || 'proyecto').replace(/[^a-z0-9_\-]/gi, '_');
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${name}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importProject(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.inputs) throw new Error('Formato de proyecto no reconocido');
+      // Restaurar inputs
+      Object.entries(data.inputs).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el && el.type !== 'file') el.value = val;
+      });
+      // Restaurar estado
+      if (data.gridMode) gridMode = data.gridMode;
+      manualStrings = data.manualStrings || {};
+      manualPanels  = data.manualPanels  || {};
+      if (Array.isArray(data.monthlyIrrA) && data.monthlyIrrA.length === 12) monthlyIrrA = data.monthlyIrrA;
+      if (Array.isArray(data.monthlyIrrB) && data.monthlyIrrB.length === 12) monthlyIrrB = data.monthlyIrrB;
+      if (data.prodMode) prodMode = data.prodMode;
+      if (data.logoDataURL) {
+        logoDataURL = data.logoDataURL;
+        const headerImg = document.getElementById('logo-preview-header');
+        headerImg.src = logoDataURL;
+        headerImg.style.display = 'block';
+        const bigImg = document.getElementById('logo-preview-big');
+        if (bigImg) { bigImg.src = logoDataURL; }
+        const area = document.getElementById('logo-preview-area');
+        if (area) area.style.display = 'block';
+        const coverLogo = document.getElementById('cover-logo');
+        if (coverLogo) { coverLogo.src = logoDataURL; coverLogo.style.display = 'block'; }
+      }
+      // Sincronizar botones de modo grid
+      document.getElementById('mode-auto-btn').classList.toggle('active', gridMode==='auto');
+      document.getElementById('mode-manual-btn').classList.toggle('active', gridMode==='manual');
+      applyPanelsFieldLock();
+      // Recalcular todo
+      updateCover();
+      updateLogic();
+      if (gridMode === 'manual') syncTotalsFromManualGrid();
+      calcShadowsZone('a');
+      calcShadowsZone('b');
+      toggleProdMode(prodMode);
+      alert('Proyecto cargado correctamente.');
+    } catch (err) {
+      alert('Error al cargar el proyecto: ' + err.message);
+    }
+    // Permitir recargar el mismo archivo
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  // Set today's date
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('proj-date').value = today;
+  updateCover();
+
+  // Reemplazar textarea de notas en impresión (Ctrl+P o botón)
+  window.addEventListener('beforeprint', () => {
+    const ta = document.getElementById('proj-notes');
+    if (!ta) return;
+    // Evitar duplicados si ya existe el div
+    const existing = document.getElementById('proj-notes-print');
+    if (existing) existing.remove();
+    const div = document.createElement('div');
+    div.id = 'proj-notes-print';
+    div.style.cssText = 'font-size:11px;color:#374151;line-height:1.7;white-space:pre-wrap;word-break:break-word;padding:4px 0;background:transparent;';
+    div.textContent = ta.value || '';
+    ta.parentNode.insertBefore(div, ta);
+    ta.style.display = 'none';
+  });
+  window.addEventListener('afterprint', () => {
+    const ta = document.getElementById('proj-notes');
+    const div = document.getElementById('proj-notes-print');
+    if (div) div.remove();
+    if (ta) ta.style.display = '';
+  });
+
+  // CSS fix for zones-grid on mobile
+  const zGrids = document.querySelectorAll('.zones-grid');
+  const mq = window.matchMedia('(max-width:640px)');
+  const fixGrids = () => zGrids.forEach(g => g.style.gridTemplateColumns = mq.matches ? '1fr' : '1fr 1fr');
+  mq.addEventListener('change', fixGrids);
+  fixGrids();
+
+  // Initial calc
+  updateLogic();
+  calcShadowsZone('a');
+  calcShadowsZone('b');
+  calcProduction();
+
+  // ============================================================
+  // PERSISTENCIA: GESTOR DE PROYECTOS CON localStorage
+  // ============================================================
+  const STORAGE_KEY = 'piamonte_projects';
+  const AUTOSAVE_KEY = 'piamonte_autosave';
+
+  // Obtener lista de proyectos guardados
+  function getProjectsList() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    } catch (e) {
+      return {};
+    }
+  }
+
+  // Guardar estado actual
+  function getProjectState() {
+    const inputs = {};
+    document.querySelectorAll('input, select, textarea').forEach(el => {
+      if (el.id && el.type !== 'file') {
+        inputs[el.id] = el.value;
+      }
+    });
+    return {
+      version: 1,
+      timestamp: new Date().toISOString(),
+      inputs,
+      gridMode,
+      manualStrings: { ...manualStrings },
+      manualPanels: { ...manualPanels },
+      monthlyIrrA: [...monthlyIrrA],
+      monthlyIrrB: [...monthlyIrrB],
+      prodMode,
+      logoDataURL,
+      promoterLogoDataURL,
+    };
+  }
+
+  // Restaurar estado
+  function restoreProjectState(state) {
+    if (!state) return;
+    // Restaurar inputs
+    Object.entries(state.inputs || {}).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el && el.type !== 'file') el.value = val;
+    });
+    // Restaurar estado global
+    if (state.gridMode) gridMode = state.gridMode;
+    if (state.manualStrings) manualStrings = state.manualStrings;
+    if (state.manualPanels) manualPanels = state.manualPanels;
+    if (Array.isArray(state.monthlyIrrA)) monthlyIrrA = state.monthlyIrrA;
+    if (Array.isArray(state.monthlyIrrB)) monthlyIrrB = state.monthlyIrrB;
+    if (state.prodMode) prodMode = state.prodMode;
+    if (state.logoDataURL) {
+      logoDataURL = state.logoDataURL;
+      const headerImg = document.getElementById('logo-preview-header');
+      if (headerImg) {
+        headerImg.src = logoDataURL;
+        headerImg.style.display = 'block';
+      }
+    }
+    if (state.promoterLogoDataURL) {
+      promoterLogoDataURL = state.promoterLogoDataURL;
+      const promoterLogoImg = document.getElementById('promoter-logo-preview-big');
+      if (promoterLogoImg) {
+        promoterLogoImg.src = promoterLogoDataURL;
+        document.getElementById('promoter-logo-preview-area').style.display = 'block';
+      }
+      const coverPromoterLogo = document.getElementById('cover-promoter-logo');
+      if (coverPromoterLogo) {
+        coverPromoterLogo.src = promoterLogoDataURL;
+        coverPromoterLogo.style.display = 'block';
+      }
+    }
+    // Recalcular
+    updateLogic();
+    calcShadowsZone('a');
+    calcShadowsZone('b');
+    calcProduction();
+  }
+
+  // Guardado automático cada 10 segundos si hay cambios
+  let lastAutoSave = JSON.stringify(getProjectState());
+  setInterval(() => {
+    const currentState = JSON.stringify(getProjectState());
+    if (currentState !== lastAutoSave) {
+      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(getProjectState()));
+      lastAutoSave = currentState;
+    }
+  }, 10000);
+
+  // Guardar proyecto con nombre
+  function saveProjectNamed(projectName) {
+    if (!projectName || projectName.trim() === '') {
+      alert('Por favor ingresa un nombre para el proyecto');
+      return;
+    }
+    const name = projectName.trim();
+    const projects = getProjectsList();
+    projects[name] = getProjectState();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+    updateProjectsUI();
+    alert(`Proyecto "${name}" guardado.`);
+  }
+
+  // Cargar proyecto
+  function loadProject(projectName) {
+    const projects = getProjectsList();
+    if (projects[projectName]) {
+      restoreProjectState(projects[projectName]);
+      document.getElementById('proj-name').value = projectName;
+      updateProjectsUI();
+      alert(`Proyecto "${projectName}" cargado.`);
+    }
+  }
+
+  // Eliminar proyecto
+  function deleteProject(projectName) {
+    if (!confirm(`¿Eliminar proyecto "${projectName}"?`)) return;
+    const projects = getProjectsList();
+    delete projects[projectName];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+    updateProjectsUI();
+  }
+
+  // Actualizar UI de proyectos
+  function updateProjectsUI() {
+    const projects = getProjectsList();
+    const listContainer = document.getElementById('projects-list-container');
+    if (!listContainer) {
+      console.log('Contenedor de proyectos no encontrado');
+      return;
+    }
+
+    const projectNames = Object.keys(projects).sort();
+    
+    if (projectNames.length === 0) {
+      listContainer.innerHTML = '<div style="font-size:11px;color:var(--text-muted);text-align:center;padding:12px;background:#fafafa;border-radius:4px;">No hay proyectos guardados.<br>Guarda uno para empezar.</div>';
+      return;
+    }
+
+    listContainer.innerHTML = projectNames.map(name => {
+      const proj = projects[name];
+      const fecha = new Date(proj.timestamp).toLocaleDateString('es-ES', {
+        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+      });
+      // Escapar comillas simples en el nombre para onclick
+      const escapedName = name.replace(/'/g, "\\'");
+      return `
+        <div style="background:#fafafa;border:1px solid var(--border);border-radius:4px;padding:10px;margin-bottom:8px;font-size:11px;">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
+            <strong style="color:var(--primary);">📁 ${name}</strong>
+            <span style="color:var(--text-muted);font-size:10px;">${fecha}</span>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button type="button" onclick="window.loadProjectUI('${escapedName}'); return false;" style="flex:1;padding:6px 8px;background:var(--info);color:white;border:none;border-radius:3px;cursor:pointer;font-size:11px;font-weight:bold;">Cargar</button>
+            <button type="button" onclick="window.deleteProjectUI('${escapedName}'); return false;" style="flex:0.3;padding:6px 4px;background:#dc2626;color:white;border:none;border-radius:3px;cursor:pointer;font-size:11px;font-weight:bold;">✕</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Crear panel de gestión de proyectos (insertar al final de #main)
+  const projectsPanel = document.createElement('div');
+  projectsPanel.id = 'projects-panel-container';
+  projectsPanel.className = 'no-print';
+  projectsPanel.style.cssText = 'background:var(--info-bg);border:2px solid var(--info);border-radius:var(--radius);padding:14px;margin:20px 0;';
+  projectsPanel.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;border-bottom:1px solid var(--info);padding-bottom:8px;">
+      <h4 style="margin:0;color:var(--info);font-size:13px;">💾 Mis Proyectos</h4>
+      <span style="font-size:10px;color:var(--text-muted);">localStorage — sin servidor</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:10px;">
+      <input type="text" id="new-project-name" placeholder="Nombre del proyecto" style="padding:8px;border:1px solid var(--border);border-radius:4px;font-size:12px;">
+      <button type="button" onclick="window.saveProjectNamedUI(); return false;" style="padding:8px 12px;background:var(--info);color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold;font-size:12px;">Guardar</button>
+    </div>
+    <div id="projects-list-container" style="max-height:250px;overflow-y:auto;border:1px solid var(--border);border-radius:4px;padding:8px;background:white;"></div>
+    <p style="font-size:10px;color:var(--text-muted);margin-top:8px;margin-bottom:0;" class="note-info">
+      ⓘ También se guarda automáticamente un borrador cada 10 segundos. Los proyectos se almacenan en tu navegador (no en internet). Si limpias la caché del navegador, se pierden.
+    </p>
+  `;
+
+  const mainSection = document.getElementById('main');
+  if (mainSection) {
+    mainSection.appendChild(projectsPanel);
+  }
+
+  // Función pública para guardar desde el botón
+  window.saveProjectNamedUI = function() {
+    const input = document.getElementById('new-project-name');
+    const name = input.value;
+    saveProjectNamed(name);
+    input.value = '';
+    updateProjectsUI();
+  };
+
+  // Función pública para cargar desde botón
+  window.loadProjectUI = function(projectName) {
+    loadProject(projectName);
+  };
+
+  // Función pública para eliminar desde botón
+  window.deleteProjectUI = function(projectName) {
+    deleteProject(projectName);
+  };
+
+  // Cargar autosave al iniciar
+  const autoSaved = localStorage.getItem(AUTOSAVE_KEY);
+  if (autoSaved) {
+    try {
+      restoreProjectState(JSON.parse(autoSaved));
+    } catch (e) {
+      console.log('No se pudo restaurar autosave', e);
+    }
+  }
+
+  // Actualizar lista de proyectos
+  updateProjectsUI();
+});
+</script>
+</body>
+</html>
